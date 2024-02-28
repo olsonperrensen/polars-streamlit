@@ -1,3 +1,4 @@
+# TODO add Pydantic class to add validation of classes
 from fastapi import FastAPI
 from fastapi.responses import HTMLResponse
 from great_tables import GT, html
