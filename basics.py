@@ -30,3 +30,6 @@ st.chat_message(
 st.status(
     label="the label"
 )  # Inserts a status container for display output from long#running tasks
+
+st.sidebar.slider("l", -99, 2147, 66)
+st.sidebar.selectbox("l",[1,2,3,4])
