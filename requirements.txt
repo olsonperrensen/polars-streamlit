@@ -4,3 +4,5 @@ altair
 plotly
 great_tables
 polars
+fastapi
+uvicorn[standard]
