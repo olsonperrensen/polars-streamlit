@@ -2,6 +2,6 @@
 #### python -m streamlit run front.py
 
 ### run backend using the following command : 
-#### python -m uvicorn --reload back:app
+#### python -m uvicorn --reload main:app
 
 
