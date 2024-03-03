@@ -1,5 +1,6 @@
 import streamlit as st
 import requests
+import polars as pl
 
 st.title("Login Page")
 
@@ -24,15 +25,26 @@ if login_button:
         password_placeholder.text("")
         st.write("Redirecting to the protected data...")
 
-        # Display the protected data after successful login
-        url = "http://localhost:8000/protected"
-        headers = {"Authorization": f"Bearer {token}"}
-        response = requests.get(url, headers=headers)
+        st.info(
+            "You can get .parquet files from places like: `https://huggingface.co/datasets/Qdrant/dbpedia-entities-openai3-text-embedding-3-large-1536-1M/tree/refs%2Fconvert%2Fparquet/default/train`"
+        )
+        uploaded_file = st.file_uploader("Upload your Parquet file", type="parquet")
 
-        if response.status_code == 200:
-            response.encoding = "utf-8"
-            html = response.text
-            st.write(html, unsafe_allow_html=True)
+        if uploaded_file is not None:
+            df = pl.read_parquet(uploaded_file)
+            st.write(df.head(10))  # Display the first 10 rows of the dataframe
+
+        # DEBUG
+        if False:
+            # Display the protected data after successful login
+            url = "http://localhost:8000/protected"
+            headers = {"Authorization": f"Bearer {token}"}
+            response = requests.get(url, headers=headers)
+
+            if response.status_code == 200:
+                response.encoding = "utf-8"
+                html = response.text
+                st.write(html, unsafe_allow_html=True)
     elif auth_response.status_code == 401:
         image_path = "assets/unauthorized_image.png"
         image = open(image_path, "rb").read()
