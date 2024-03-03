@@ -1,9 +1,9 @@
 # TODO add Pydantic class to add validation of classes
-from fastapi import FastAPI, Depends, HTTPException, Form
+from fastapi import FastAPI, Depends, HTTPException, Form, UploadFile, File
 from fastapi.responses import HTMLResponse
 from great_tables import GT, html
 from great_tables.data import sza
-import polars as pl
+from polars import DataFrame, scan_parquet
 import polars.selectors as cs
 from fastapi.security import OAuth2PasswordBearer
 import jwt
@@ -53,27 +53,22 @@ def login(username: str = Form(...), password: str = Form(...)):
 
 
 # Protected route
-@app.get("/protected", response_class=HTMLResponse)
-def protected_route(token: str = Depends(oauth2_scheme)):
+@app.post("/protected")
+async def protected_route(
+    token: str = Depends(oauth2_scheme), file: UploadFile = File(...)
+):
+    print("FASTAPI POLARS ENDPOINT REACHED")
     username = decode_token(token)
-    sza_pivot = (
-        pl.from_pandas(sza)
-        .filter((pl.col("latitude") == "20") & (pl.col("tst") <= "1200"))
-        .select(pl.col("*").exclude("latitude"))
-        .drop_nulls()
-        .pivot(values="sza", index="month", columns="tst", sort_columns=True)
-    )
+    contents = await file.read()
 
-    res = (
-        GT(sza_pivot, rowname_col="month")
-        .data_color(
-            domain=[90, 0],
-            palette=["rebeccapurple", "white", "orange"],
-            na_color="white",
-        )
-        .tab_header(
-            title="Solar Zenith Angles from 05:30 to 12:00",
-            subtitle=html("Average monthly values at latitude of 20&deg;N."),
-        )
-    )
-    return res.as_raw_html()
+    # Save the uploaded file to a temporary file
+    with open("temp.parquet", "wb") as f:
+        f.write(contents)
+
+    # Read the Parquet file into a Polars DataFrame
+    df = scan_parquet("temp.parquet", n_rows=10)
+
+    # Convert the Polars DataFrame to a JSON object
+    df_json = df.collect().write_json()
+
+    return {"data": df_json}
