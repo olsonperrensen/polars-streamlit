@@ -6,3 +6,5 @@ great_tables
 polars
 fastapi
 uvicorn[standard]
+pyjwt
+python-multipart
