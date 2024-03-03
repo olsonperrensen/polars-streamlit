@@ -43,7 +43,7 @@ elif page == "Upload .parquet":
         )
         uploaded_file = st.file_uploader("Upload your Parquet file", type="parquet")
         if uploaded_file is not None:
-            st.write("File locally uploaded successfully! Now sending it to backend")
+            st.write("Uploading FastAPI")
             url = "http://localhost:8000/protected"
             headers = {"Authorization": f"Bearer {st.session_state.token}"}
             response = requests.post(
@@ -52,7 +52,7 @@ elif page == "Upload .parquet":
                 files={"file": uploaded_file},
             )
             if response.status_code == 200:
-                st.write("File uploaded successfully to FastAPI!")
+                st.write("Done.")
                 response.encoding = "utf-8"
                 res = response.text
                 st.write(res)

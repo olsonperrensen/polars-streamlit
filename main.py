@@ -58,17 +58,22 @@ async def protected_route(
     token: str = Depends(oauth2_scheme), file: UploadFile = File(...)
 ):
     print("FASTAPI POLARS ENDPOINT REACHED")
-    username = decode_token(token)
-    contents = await file.read()
+    if file.content_type != "application/octet-stream":
+        raise HTTPException(status_code=400, detail="Only Parquet files are allowed")
+    try:
+        username = decode_token(token)
+        contents = await file.read()
 
-    # Save the uploaded file to a temporary file
-    with open("temp.parquet", "wb") as f:
-        f.write(contents)
+        # Save the uploaded file to a temporary file
+        with open("temp.parquet", "wb") as f:
+            f.write(contents)
 
-    # Read the Parquet file into a Polars DataFrame
-    df = scan_parquet("temp.parquet", n_rows=10)
+        # Read the Parquet file into a Polars DataFrame
+        df = scan_parquet("temp.parquet", n_rows=10)
 
-    # Convert the Polars DataFrame to a JSON object
-    df_json = df.collect().write_json()
+        # Convert the Polars DataFrame to a JSON object
+        df_json = df.collect().write_json()
 
-    return {"data": df_json}
+        return {"data": df_json}
+    except Exception as e:
+        raise HTTPException(status_code=400, detail="Invalid Parquet file")
