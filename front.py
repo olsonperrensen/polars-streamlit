@@ -88,10 +88,17 @@ elif page == "Explore re-rendering":
         start_col, end_col = st.slider("Columns", 0, 222, (0, 222))
 
         # Initialize button states
-        up_button = st.button("⬆️ Up")
-        down_button = st.button("⬇️ Down")
-        left_button = st.button("⬅️ Left")
-        right_button = st.button("➡️ Right")
+        up, down, left, right = st.columns([1, 1, 1, 1])
+
+        with up:
+            st.button("⬆️")
+        with down:
+            st.button("⬇️")
+        with left:
+            st.button("⬅️")
+        with right:
+            st.button("➡️")
+
         render_table(start_row, end_row, start_col, end_col)
 
     else:
