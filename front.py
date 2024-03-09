@@ -73,7 +73,7 @@ elif page == "Explore re-rendering":
     first_time = True
 
     # Function to render the Polars table
-    def render_table(num_rows, num_cols):
+    def render_table(start_row=0, end_row=1, start_col=0, end_col=1):
         df = pl.DataFrame(
             [
                 {"command": "st.selectbox", "rating": 4, "is_widget": True},
@@ -81,17 +81,17 @@ elif page == "Explore re-rendering":
                 {"command": "st.time_input", "rating": 3, "is_widget": True},
             ]
         )
-        df = df.select(pl.col(df.columns[0:num_cols]))
+        df = df.select(pl.col(df.columns[start_col:end_col]))
         st.dataframe(df, use_container_width=True)
 
     # Sliders for choosing the number of rows and columns
-    num_rows = st.slider("Number of rows", min_value=1, max_value=10, value=1)
-    num_cols = st.slider("Number of columns", min_value=1, max_value=10, value=1)
+    start_row, end_row = st.slider("Rows", 0, 222, (0, 222))
+    start_col, end_col = st.slider("Columns", 0, 222, (0, 222))
 
     if st.session_state.token:  # Check if token is present
         if st.button("↻") or first_time:
             first_time = False
-            render_table(num_rows, num_cols)
+            render_table(start_row, end_row, start_col, end_col)
 
     else:
         st.warning("Please log in")
