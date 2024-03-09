@@ -54,38 +54,21 @@ def login(username: str = Form(...), password: str = Form(...)):
 
 # Protected route
 @app.post("/protected")
-async def upload_file(
-    token: str = Depends(oauth2_scheme), file: UploadFile = File(...)
-):
+async def process_file(token: str = Depends(oauth2_scheme)):
 
     print("FASTAPI POLARS ENDPOINT REACHED")
-
-    file_content = await file.read()
-
-    # Process the file content here
-    # For example, you can save the file or perform any other operations
-
-    return JSONResponse(content={"message": "File uploaded successfully"})
-
-    if file.content_type != "application/octet-stream":
-        raise HTTPException(
-            status_code=400,
-            detail=f"{file.content_type} was sent to the server, while only Parquet files are allowed",
-        )
+    username = decode_token(token)
+    if username:
+        print(f"AUTHENTICATED as {username}")
     try:
-        username = decode_token(token)
-        contents = await file.read()
-
-        # Save the uploaded file to a temporary file
-        with open("temp.parquet", "wb") as f:
-            f.write(contents)
-
         # Read the Parquet file into a Polars DataFrame
-        df = scan_parquet("temp.parquet", n_rows=10)
+        df = scan_parquet("data.parquet", n_rows=1)
 
         # Convert the Polars DataFrame to a JSON object
         df_json = df.collect().write_json()
 
         return {"data": df_json}
     except Exception as e:
-        raise HTTPException(status_code=400, detail="Invalid Parquet file")
+        raise HTTPException(
+            status_code=400, detail=f"Something went wrong. Error: ```{e}```"
+        )

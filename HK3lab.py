@@ -8,18 +8,18 @@ if "sidebar_state" not in st.session_state:
 st.set_page_config(initial_sidebar_state=st.session_state.sidebar_state)
 
 # Initialize button states
-login, explore, upload = st.columns([1, 1, 1])
+login, explore, process = st.columns([1, 1, 1])
 
 with login:
     st.button("Login")
 with explore:
     st.button("Explore")
-with upload:
-    st.button("Upload")
+with process:
+    st.button("Process")
 
 if login:
     st.switch_page("pages/login.py")
 if explore:
     st.switch_page("pages/explore.py")
-if upload:
-    st.switch_page("pages/upload.py")
+if process:
+    st.switch_page("pages/process.py")
