@@ -5,11 +5,13 @@ if st.session_state.token:  # Check if token is present
     send = st.button("send")
 
     if send:
-        with open("data.parquet", "rb") as f:
+        with open("./data.parquet", "rb") as f:
+            file_content = f.read()
+            files = {"file": (f.name, file_content)}
             r = requests.post(
                 "http://localhost:8000/protected",
                 headers={"Authorization": f"Bearer {st.session_state.token}"},
-                files={"file": f},
+                files=files,
             )
             if r.status_code == 200:
                 st.write("Done.")

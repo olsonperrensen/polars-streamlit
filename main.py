@@ -1,6 +1,6 @@
 # TODO add Pydantic class to add validation of classes
 from fastapi import FastAPI, Depends, HTTPException, Form, UploadFile, File
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, JSONResponse
 from great_tables import GT, html
 from great_tables.data import sza
 from polars import DataFrame, scan_parquet
@@ -54,12 +54,24 @@ def login(username: str = Form(...), password: str = Form(...)):
 
 # Protected route
 @app.post("/protected")
-async def protected_route(
+async def upload_file(
     token: str = Depends(oauth2_scheme), file: UploadFile = File(...)
 ):
+
     print("FASTAPI POLARS ENDPOINT REACHED")
+
+    file_content = await file.read()
+
+    # Process the file content here
+    # For example, you can save the file or perform any other operations
+
+    return JSONResponse(content={"message": "File uploaded successfully"})
+
     if file.content_type != "application/octet-stream":
-        raise HTTPException(status_code=400, detail="Only Parquet files are allowed")
+        raise HTTPException(
+            status_code=400,
+            detail=f"{file.content_type} was sent to the server, while only Parquet files are allowed",
+        )
     try:
         username = decode_token(token)
         contents = await file.read()
