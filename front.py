@@ -1,6 +1,7 @@
 import streamlit as st
 import requests
 import polars as pl
+import numpy as np
 
 
 # Initialize session_state to store token
@@ -72,20 +73,16 @@ elif page == "Upload .parquet":
 elif page == "Explore re-rendering":
     # Function to render the Polars table
     def render_table(start_row=0, end_row=1, start_col=0, end_col=1):
-        df = pl.DataFrame(
-            [
-                {"command": "st.selectbox", "rating": 4, "is_widget": True},
-                {"command": "st.balloons", "rating": 5, "is_widget": False},
-                {"command": "st.time_input", "rating": 3, "is_widget": True},
-            ]
-        )
+        data = np.random.rand(60, 25)
+        df = pl.DataFrame(data)
         df = df.select(pl.col(df.columns[start_col:end_col]))
+        df = df.slice(start_row, end_row - start_row)
         st.dataframe(df, use_container_width=True)
 
     if st.session_state.token:  # Check if token is present
         # Sliders for choosing the number of rows and columns
-        start_row, end_row = st.slider("Rows", 0, 222, (0, 222))
-        start_col, end_col = st.slider("Columns", 0, 222, (0, 222))
+        start_row, end_row = st.slider("Rows", 0, 222, (0, 10))
+        start_col, end_col = st.slider("Columns", 0, 222, (0, 5))
 
         # Initialize button states
         up, down, left, right = st.columns([1, 1, 1, 1])
