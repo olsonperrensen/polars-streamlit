@@ -1,12 +1,16 @@
 import streamlit as st
 import requests
+import polars as pl
+
 
 # Initialize session_state to store token
 if "token" not in st.session_state:
     st.session_state.token = None
 
 # Create a sidebar navigation menu
-page = st.sidebar.radio("Proceed sequentially", ["Log in", "Upload .parquet"])
+page = st.sidebar.radio(
+    "Proceed sequentially", ["Log in", "Upload .parquet", "Explore re-rendering"]
+)
 
 # Display different widgets based on the selected page
 if page == "Log in":
@@ -36,27 +40,58 @@ if page == "Log in":
             image_path = "assets/unauthorized_image.png"
             image = open(image_path, "rb").read()
             st.image(image, caption="Unauthorized Access")
+
+
 elif page == "Upload .parquet":
     if st.session_state.token:  # Check if token is present
         st.info(
             "You can get .parquet files from places like: `https://huggingface.co/datasets/Qdrant/dbpedia-entities-openai3-text-embedding-3-large-1536-1M/tree/refs%2Fconvert%2Fparquet/default/train`"
         )
-        uploaded_file = st.file_uploader("Upload your Parquet file", type="parquet")
-        if uploaded_file is not None:
-            st.write("Uploading FastAPI")
-            url = "http://localhost:8000/protected"
-            headers = {"Authorization": f"Bearer {st.session_state.token}"}
-            response = requests.post(
-                url,
-                headers=headers,
-                files={"file": uploaded_file},
-            )
-            if response.status_code == 200:
-                st.write("Done.")
-                response.encoding = "utf-8"
-                res = response.text
-                st.write(res)
-            else:
-                st.write("Failed to upload file.")
+        st.write("Coming soon...")
+        # uploaded_file = st.file_uploader("Upload your Parquet file", type="parquet")
+        # if uploaded_file is not None:
+        #     st.write("Uploading FastAPI")
+        #     url = "http://localhost:8000/protected"
+        #     headers = {"Authorization": f"Bearer {st.session_state.token}"}
+        #     response = requests.post(
+        #         url,
+        #         headers=headers,
+        #         files={"file": uploaded_file},
+        #     )
+        #     if response.status_code == 200:
+        #         st.write("Done.")
+        #         response.encoding = "utf-8"
+        #         res = response.text
+        #         st.write(res)
+        #     else:
+        #         st.write("Failed to upload file.")
     else:
-        st.warning("Please log in to upload a Parquet file.")
+        st.warning("Please log in")
+
+
+elif page == "Explore re-rendering":
+    first_time = True
+
+    # Function to render the Polars table
+    def render_table(num_rows, num_cols):
+        df = pl.DataFrame(
+            [
+                {"command": "st.selectbox", "rating": 4, "is_widget": True},
+                {"command": "st.balloons", "rating": 5, "is_widget": False},
+                {"command": "st.time_input", "rating": 3, "is_widget": True},
+            ]
+        )
+        df = df.select(pl.col(df.columns[0:num_cols]))
+        st.dataframe(df, use_container_width=True)
+
+    # Sliders for choosing the number of rows and columns
+    num_rows = st.slider("Number of rows", min_value=1, max_value=10, value=1)
+    num_cols = st.slider("Number of columns", min_value=1, max_value=10, value=1)
+
+    if st.session_state.token:  # Check if token is present
+        if st.button("↻") or first_time:
+            first_time = False
+            render_table(num_rows, num_cols)
+
+    else:
+        st.warning("Please log in")
