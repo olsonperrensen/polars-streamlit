@@ -1,7 +1,6 @@
 import streamlit as st
 import requests
 import polars as pl
-import numpy as np
 
 
 # Initialize session_state to store token
@@ -46,7 +45,7 @@ if page == "Log in":
 elif page == "Upload .parquet":
     if st.session_state.token:  # Check if token is present
         st.info(
-            "You can get .parquet files from places like: `https://huggingface.co/datasets/Qdrant/dbpedia-entities-openai3-text-embedding-3-large-1536-1M/tree/refs%2Fconvert%2Fparquet/default/train`"
+            "You can get .parquet files from places like: `https://huggingface.co/datasets/Qdrant/dbpedia-entities-openai3-text-embedding-3-small-512-100K`"
         )
         st.write("Coming soon...")
         # uploaded_file = st.file_uploader("Upload your Parquet file", type="parquet")
@@ -73,7 +72,8 @@ elif page == "Upload .parquet":
 elif page == "Explore re-rendering":
     # Function to render the Polars table
     def render_table(start_row=0, end_row=1, start_col=0, end_col=1):
-        data = np.random.rand(60, 25)
+        data = pl.scan_parquet("data.parquet", n_rows=end_row)
+        data = data.collect()
         df = pl.DataFrame(data)
         df = df.select(pl.col(df.columns[start_col:end_col]))
         df = df.slice(start_row, end_row - start_row)
