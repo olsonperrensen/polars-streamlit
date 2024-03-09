@@ -70,8 +70,6 @@ elif page == "Upload .parquet":
 
 
 elif page == "Explore re-rendering":
-    first_time = True
-
     # Function to render the Polars table
     def render_table(start_row=0, end_row=1, start_col=0, end_col=1):
         df = pl.DataFrame(
@@ -84,14 +82,17 @@ elif page == "Explore re-rendering":
         df = df.select(pl.col(df.columns[start_col:end_col]))
         st.dataframe(df, use_container_width=True)
 
-    # Sliders for choosing the number of rows and columns
-    start_row, end_row = st.slider("Rows", 0, 222, (0, 222))
-    start_col, end_col = st.slider("Columns", 0, 222, (0, 222))
-
     if st.session_state.token:  # Check if token is present
-        if st.button("↻") or first_time:
-            first_time = False
-            render_table(start_row, end_row, start_col, end_col)
+        # Sliders for choosing the number of rows and columns
+        start_row, end_row = st.slider("Rows", 0, 222, (0, 222))
+        start_col, end_col = st.slider("Columns", 0, 222, (0, 222))
+
+        # Initialize button states
+        up_button = st.button("⬆️ Up")
+        down_button = st.button("⬇️ Down")
+        left_button = st.button("⬅️ Left")
+        right_button = st.button("➡️ Right")
+        render_table(start_row, end_row, start_col, end_col)
 
     else:
         st.warning("Please log in")
