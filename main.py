@@ -7,6 +7,7 @@ from polars import DataFrame, scan_parquet
 import polars.selectors as cs
 from fastapi.security import OAuth2PasswordBearer
 import jwt
+from pydantic import BaseModel
 
 
 app = FastAPI()
@@ -72,3 +73,20 @@ async def process_file(token: str = Depends(oauth2_scheme)):
         raise HTTPException(
             status_code=400, detail=f"Something went wrong. Error: ```{e}```"
         )
+
+
+class PandasCode(BaseModel):
+    pandas_code: str
+
+
+@app.post("/own_polars")
+def process_polars_code(data: PandasCode):
+    try:
+        df = eval(data.pandas_code)
+
+        # Convert the Polars DataFrame to a JSON object
+        df_json = df.collect().write_json()
+
+        return {"data": df_json}
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
