@@ -1,6 +1,9 @@
 import streamlit as st
 import polars as pl
 
+if "token" not in st.session_state:
+    st.switch_page("pages/login.py")
+
 
 # Function to render the Polars table
 def render_table(start_row=0, end_row=1, start_col=0, end_col=1):

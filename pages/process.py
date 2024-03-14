@@ -2,6 +2,9 @@ import streamlit as st
 import requests
 import json
 
+if "token" not in st.session_state:
+    st.switch_page("pages/login.py")
+
 if st.session_state.token:  # Check if token is present
     send = st.button("send")
 

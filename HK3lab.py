@@ -1,5 +1,6 @@
 import streamlit as st
 
+
 # Initialize a session state variable that tracks the sidebar state (either 'expanded' or 'collapsed').
 if "sidebar_state" not in st.session_state:
     st.session_state.sidebar_state = "collapsed"
