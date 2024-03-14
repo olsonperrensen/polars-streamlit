@@ -8,6 +8,8 @@ import polars.selectors as cs
 from fastapi.security import OAuth2PasswordBearer
 import jwt
 from pydantic import BaseModel
+import altair as alt
+import plotly.express as px
 
 
 app = FastAPI()
