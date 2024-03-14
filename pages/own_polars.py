@@ -3,6 +3,7 @@ import streamlit as st
 import streamlit as st
 import requests
 import json
+import traceback
 
 if "token" not in st.session_state:
     st.switch_page("pages/login.py")
@@ -40,7 +41,12 @@ if st.session_state.token:
             options.strip("[]"),
         )
         # Sanitize the Polars code to prevent injections
-        sanitized_code = polars_code.replace(";", "").replace("&", "").replace("  ", "")
+        sanitized_code = (
+            polars_code.replace(";", "")
+            .replace("&", "")
+            .replace("`", "")
+            .replace("  ", "")
+        )
 
         # Encode the polars code in a JSON format
         data = {"polars_code": sanitized_code}
@@ -50,12 +56,22 @@ if st.session_state.token:
 
         # Display the response from the server
         data_dict = json.loads(response.text)
-        data_dict = json.loads(data_dict["data"])
-        # Extract column names and values from JSON data
-        columns = [col["name"] for col in data_dict["columns"]]
-        values = [col["values"] for col in data_dict["columns"]]
-        data_dict = {col: values[i] for i, col in enumerate(columns)}
-        st.dataframe(data_dict)
+
+        try:
+            data_dict = json.loads(data_dict["data"])
+            columns = [col["name"] for col in data_dict.get("columns", [])]
+            values = [col["values"] for col in data_dict.get("columns", [])]
+            data_dict = {col: values[i] for i, col in enumerate(columns)}
+            st.dataframe(data_dict)
+        except KeyError as e:
+            st.error(f"Error parsing JSON data: {e}")
+            st.error("Traceback:\n" + traceback.format_exc())
+        except json.JSONDecodeError as e:
+            st.error(f"Error decoding JSON data: {e}")
+            st.error("Traceback:\n" + traceback.format_exc())
+        except Exception as e:
+            st.error(f"An unexpected error occurred: {e}")
+            st.error("Traceback:\n" + traceback.format_exc())
 
     else:
         st.write("Please select an option")

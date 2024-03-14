@@ -83,7 +83,12 @@ class PolarsCode(BaseModel):
 
 def sanitize_input(input_string: str) -> str:
     # Implement sanitization logic here (e.g., using regex to remove unwanted characters)
-    sanitized_string = input_string.replace(";", "").replace("&", "").replace("  ", "")
+    sanitized_string = (
+        input_string.replace(";", "")
+        .replace("&", "")
+        .replace("`", "")
+        .replace("  ", "")
+    )
     return sanitized_string
 
 
