@@ -40,7 +40,7 @@ if st.session_state.token:
             options.strip("[]"),
         )
         # Sanitize the Polars code to prevent injections
-        sanitized_code = polars_code.replace(";", "").replace("&", "")
+        sanitized_code = polars_code.replace(";", "").replace("&", "").replace("  ", "")
 
         # Encode the polars code in a JSON format
         data = {"polars_code": sanitized_code}
