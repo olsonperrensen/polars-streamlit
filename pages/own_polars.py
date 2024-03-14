@@ -31,21 +31,21 @@ if st.session_state.token:
 
     if options:
         options = options[-1]
-        # Create a text input box for the user to enter the pandas code
-        pandas_code = st.text_area(
-            """Enter your pandas code here 
+        # Create a text input box for the user to enter the Polars code
+        polars_code = st.text_area(
+            """Enter your Polars code here 
         (you can skip Polars `pl.`) so write  
         the methods directly here instead as if you were interacting with an IDE):
         """,
             options.strip("[]"),
         )
-        # Sanitize the pandas code to prevent injections
-        sanitized_code = pandas_code.replace(";", "").replace("&", "")
+        # Sanitize the Polars code to prevent injections
+        sanitized_code = polars_code.replace(";", "").replace("&", "")
 
-        # Encode the pandas code in a JSON format
-        data = {"pandas_code": sanitized_code}
+        # Encode the polars code in a JSON format
+        data = {"polars_code": sanitized_code}
 
-        # Send the pandas code over a HTTP body POST request
+        # Send the polars code over a HTTP body POST request
         response = requests.post("http://localhost:8000/own_polars", json=data)
 
         # Display the response from the server

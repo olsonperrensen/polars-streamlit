@@ -77,14 +77,21 @@ async def process_file(token: str = Depends(oauth2_scheme)):
         )
 
 
-class PandasCode(BaseModel):
-    pandas_code: str
+class PolarsCode(BaseModel):
+    polars_code: str
+
+
+def sanitize_input(input_string: str) -> str:
+    # Implement sanitization logic here (e.g., using regex to remove unwanted characters)
+    sanitized_string = input_string.replace(";", "").replace("&", "")
+    return sanitized_string
 
 
 @app.post("/own_polars")
-def process_polars_code(data: PandasCode):
+def process_polars_code(data: PolarsCode):
     try:
-        df = eval(data.pandas_code)
+        sanitized_code = sanitize_input(data.polars_code)
+        df = eval(sanitized_code)
 
         # Convert the Polars DataFrame to a JSON object
         df_json = df.collect().write_json()
