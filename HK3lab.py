@@ -9,7 +9,7 @@ if "sidebar_state" not in st.session_state:
 st.set_page_config(initial_sidebar_state=st.session_state.sidebar_state)
 
 # Initialize button states
-login, explore, process, own_polars = st.columns([1, 1, 1, 1])
+login, explore, process, own_polars, llm = st.columns([1, 1, 1, 1, 1])
 
 with login:
     st.button("Login")
@@ -19,6 +19,8 @@ with process:
     st.button("Process")
 with own_polars:
     st.button("Own Polars")
+with llm:
+    st.button("LLM")
 
 if login:
     st.switch_page("pages/login.py")
@@ -28,3 +30,5 @@ if process:
     st.switch_page("pages/process.py")
 if own_polars:
     st.switch_page("pages/own_polars.py")
+if llm:
+    st.switch_page("pages/llm.py")
