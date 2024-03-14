@@ -6,8 +6,13 @@ if "token" not in st.session_state:
     st.switch_page("pages/login.py")
 
 if st.session_state.token:
-    st.title("Simple chat")
-
+    st.title("Chat with your data")
+    st.info(
+        """
+        Ask something about the parquet file, for example: 
+        Can you give me a short summary of the data that's in the file?
+        """
+    )
 
     # Initialize chat history
     if "messages" not in st.session_state:
@@ -17,14 +22,6 @@ if st.session_state.token:
     for message in st.session_state.messages:
         with st.chat_message(message["role"]):
             st.markdown(message["content"])
-
-    # Accept user input
-    if prompt := st.chat_input("What is up?"):
-        # Display user message in chat message container
-        with st.chat_message("user"):
-            st.markdown(prompt)
-        # Add user message to chat history
-        st.session_state.messages.append({"role": "user", "content": prompt})
 
     # Streamed response emulator
     def response_generator():
@@ -44,5 +41,19 @@ if st.session_state.token:
         response = st.write_stream(response_generator())
     # Add assistant response to chat history
     st.session_state.messages.append({"role": "assistant", "content": response})
+    uploaded_file = st.file_uploader(
+        "Upload a parquet file and chat with the LLM!", type=("parquet")
+    )
+    # Accept user input
+    if prompt := st.chat_input(
+        placeholder="Ask something about the parquet file",
+        disabled=not uploaded_file,
+    ):
+        # Display user message in chat message container
+        with st.chat_message("user"):
+            st.markdown(prompt)
+        # Add user message to chat history
+        st.session_state.messages.append({"role": "user", "content": prompt})
+
 else:
     st.warning("Please log in")
