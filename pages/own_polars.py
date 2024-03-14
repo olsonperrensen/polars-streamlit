@@ -46,6 +46,11 @@ if options:
 
     # Display the response from the server
     data_dict = json.loads(response.text)
+    data_dict = json.loads(data_dict["data"])
+    # Extract column names and values from JSON data
+    columns = [col["name"] for col in data_dict["columns"]]
+    values = [col["values"] for col in data_dict["columns"]]
+    data_dict = {col: values[i] for i, col in enumerate(columns)}
     st.dataframe(data_dict)
 
 else:
