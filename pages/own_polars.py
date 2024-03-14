@@ -58,20 +58,28 @@ if st.session_state.token:
         data_dict = json.loads(response.text)
 
         try:
-            data_dict = json.loads(data_dict["data"])
-            columns = [col["name"] for col in data_dict.get("columns", [])]
-            values = [col["values"] for col in data_dict.get("columns", [])]
-            data_dict = {col: values[i] for i, col in enumerate(columns)}
-            st.dataframe(data_dict)
+            if "data" in data_dict:
+                data_dict = json.loads(data_dict["data"])
+                columns = [col["name"] for col in data_dict.get("columns", [])]
+                values = [col["values"] for col in data_dict.get("columns", [])]
+                data_dict = {col: values[i] for i, col in enumerate(columns)}
+                st.dataframe(data_dict)
+            else:
+                st.warning("Key 'data' not found in the input data")
+                st.error(f"DEBUG: {response.text}")
+                st.info("Traceback:\n" + traceback.format_exc())
         except KeyError as e:
-            st.error(f"Error parsing JSON data: {e}")
-            st.error("Traceback:\n" + traceback.format_exc())
+            st.warning(f"Error accessing 'data' key in input data: {e}")
+            st.error(f"DEBUG: {response.text}")
+            st.info("Traceback:\n" + traceback.format_exc())
         except json.JSONDecodeError as e:
-            st.error(f"Error decoding JSON data: {e}")
-            st.error("Traceback:\n" + traceback.format_exc())
+            st.warning(f"Error decoding JSON data: {e}")
+            st.exception(f"DEBUG: {response.text}")
+            st.info("Traceback:\n" + traceback.format_exc())
         except Exception as e:
-            st.error(f"An unexpected error occurred: {e}")
-            st.error("Traceback:\n" + traceback.format_exc())
+            st.warning(f"An unexpected error occurred: {e}")
+            st.error(f"DEBUG: {response.text}")
+            st.info("Traceback:\n" + traceback.format_exc())
 
     else:
         st.write("Please select an option")
