@@ -30,9 +30,9 @@ if st.session_state.token:
     def response_generator():
         response = random.choice(
             [
-                "Hello there! How can I assist you today?",
-                "Hi, human! Is there anything I can help you with?",
-                "Do you need help?",
+                "Hello there! I am your tailor-made Polars assistant! Ready to learn about your data? Just ask me any question and I will do my best to help you!",
+                "Hi, human! Is there anything you would like to learn about your data?",
+                "Do you need any type of assistance regarding data analysis? I don't bite, feel free to ask anything related to Polars",
             ]
         )
         for word in response.split():
