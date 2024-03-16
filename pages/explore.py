@@ -24,10 +24,8 @@ if "token" not in st.session_state:
 # Function to render the Polars table
 @st.cache_data
 def render_table(current_dataset_name, start_row=0, end_row=1, start_col=0, end_col=1):
-    data = pl.scan_csv(f"data/{current_dataset_name}.csv")
-    # data = pl.scan_parquet("data.parquet", n_rows=end_row)
-    data = data.collect()
-    df = pl.DataFrame(data)
+    df = pl.scan_csv(f"data/{current_dataset_name}.csv")
+    df = df.collect()
     df = df.select(pl.col(df.columns[start_col:end_col]))
     df = df.slice(start_row, end_row - start_row)
     st.dataframe(df, use_container_width=True)
@@ -106,18 +104,28 @@ if st.session_state.token:  # Check if token is present
         st.markdown("<br>", unsafe_allow_html=True)
         dev_options = st.checkbox("Developer options")
 
-        start_row, end_row = st.slider("Rows", 0, 222, (0, 10))
-        start_col, end_col = st.slider("Columns", 0, 5, (0, 2))
     # --------------- dataset config ------------------------
     demo_datasets = {
+        "": "",
         "AnTuTu 2022 cross-platform benchmarks📊": "antutu_android_vs_ios_v3",
         "Mendeley's 2020 Clinical Dataset of the CYP-GUIDES Trial": "clinical",
         "VGChartz 2016 Annual Sales": "vgsales",
     }
-    selected_dataset = st.selectbox("Select a dataset", list(demo_datasets.keys()))
+    selected_dataset = st.selectbox(
+        "Select a dataset",
+        list(demo_datasets.keys()),
+        format_func=lambda x: "Select an option" if x == "" else x,
+    )
 
     current_dataset_name = demo_datasets[selected_dataset]
-    if selected_dataset != "Select a dataset":
+    st.write(current_dataset_name)
+    if selected_dataset:
+
+        end_row, end_col = pl.read_csv(f"data/{current_dataset_name}.csv").shape
+        start_row, start_col = 0, 0
+        start_row, end_row = st.slider("Rows", 0, end_row, (0, end_row))
+        start_col, end_col = st.slider("Columns", 0, end_col, (0, end_col))
+
         render_table(current_dataset_name, start_row, end_row, start_col, end_col)
     if "level" not in st.session_state:  # or st.session_state["level_change"]:
         st.session_state["level"] = "DEBUG_DUMMY_CURRENT_LEVEL"
