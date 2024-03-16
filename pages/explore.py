@@ -1,5 +1,6 @@
 import streamlit as st
 import polars as pl
+from polars.exceptions import ComputeError, PolarsError
 import json
 from lib import game_def, game_config
 from st_pages import Page, show_pages, hide_pages
@@ -24,11 +25,21 @@ if "token" not in st.session_state:
 # Function to render the Polars table
 @st.cache_data
 def render_table(current_dataset_name, start_row=0, end_row=1, start_col=0, end_col=1):
-    df = pl.scan_csv(f"data/{current_dataset_name}.csv")
-    df = df.collect()
-    df = df.select(pl.col(df.columns[start_col:end_col]))
-    df = df.slice(start_row, end_row - start_row)
-    st.dataframe(df, use_container_width=True)
+    try:
+        df = pl.scan_csv(
+            f"data/{current_dataset_name}.csv",
+            null_values=["", "__NA__", "NA", "N/A", "-1"],
+        )
+        df = df.collect()
+        df = df.select(pl.col(df.columns[start_col:end_col]))
+        df = df.slice(start_row, end_row - start_row)
+        st.dataframe(df, use_container_width=True)
+    except ComputeError as e:
+        st.write("An error occurred while computing the result:", str(e))
+        st.write("Please check your input files and try again.")
+    except PolarsError as e:
+        st.write("An error occurred while Polars was processing your file:", str(e))
+        st.write("Please try again with a different file.")
 
 
 if st.session_state.token:  # Check if token is present
@@ -118,7 +129,6 @@ if st.session_state.token:  # Check if token is present
     )
 
     current_dataset_name = demo_datasets[selected_dataset]
-    st.write(current_dataset_name)
     if selected_dataset:
 
         end_row, end_col = pl.read_csv(f"data/{current_dataset_name}.csv").shape
