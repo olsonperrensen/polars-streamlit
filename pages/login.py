@@ -1,7 +1,6 @@
 import streamlit as st
 import requests
 
-
 # Initialize session_state to store token
 if "token" not in st.session_state:
     st.session_state.token = None
