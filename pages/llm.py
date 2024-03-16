@@ -1,11 +1,14 @@
 import streamlit as st
 import random
 import time
+from st_pages import hide_pages
+
 
 if "token" not in st.session_state:
     st.switch_page("pages/login.py")
 
 if st.session_state.token:
+    hide_pages(["Login"])
     st.title("Chat with your data")
     st.info(
         """

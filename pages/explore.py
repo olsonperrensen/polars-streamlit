@@ -136,20 +136,8 @@ if st.session_state.token:  # Check if token is present
         st.markdown("<br>", unsafe_allow_html=True)
         dev_options = st.checkbox("Developer options")
 
-    start_row, end_row = st.slider("Rows", 0, 222, (0, 10))
-    start_col, end_col = st.slider("Columns", 0, 5, (0, 2))
-
-    # Initialize button states
-    up, down, left, right = st.columns([1, 1, 1, 1])
-
-    with up:
-        st.button("⬆️")
-    with down:
-        st.button("⬇️")
-    with left:
-        st.button("⬅️")
-    with right:
-        st.button("➡️")
+        start_row, end_row = st.slider("Rows", 0, 222, (0, 10))
+        start_col, end_col = st.slider("Columns", 0, 5, (0, 2))
 
     render_table(start_row, end_row, start_col, end_col)
 

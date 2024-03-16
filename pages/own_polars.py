@@ -4,11 +4,14 @@ import streamlit as st
 import requests
 import json
 import traceback
+from st_pages import hide_pages
+
 
 if "token" not in st.session_state:
     st.switch_page("pages/login.py")
 
 if st.session_state.token:
+    hide_pages(["Login"])
     # Create a multiselect widget with some options
     options = st.multiselect(
         "Test it out:",
