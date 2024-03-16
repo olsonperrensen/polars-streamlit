@@ -22,8 +22,10 @@ if "token" not in st.session_state:
 
 
 # Function to render the Polars table
-def render_table(start_row=0, end_row=1, start_col=0, end_col=1):
-    data = pl.scan_parquet("data.parquet", n_rows=end_row)
+@st.cache_data
+def render_table(current_dataset_name, start_row=0, end_row=1, start_col=0, end_col=1):
+    data = pl.scan_csv(f"data/{current_dataset_name}.csv")
+    # data = pl.scan_parquet("data.parquet", n_rows=end_row)
     data = data.collect()
     df = pl.DataFrame(data)
     df = df.select(pl.col(df.columns[start_col:end_col]))
@@ -65,11 +67,6 @@ if st.session_state.token:  # Check if token is present
 
     # ---------------- data fetch ----------------
 
-    @st.cache_data
-    def fetch_data():
-        df = sns.load_dataset("penguins")
-        return df
-
     def left_callback():
         move_callback("left")
 
@@ -81,33 +78,6 @@ if st.session_state.token:  # Check if token is present
 
     def down_callback():
         move_callback("down")
-
-    # --------------- level config ------------------------
-
-    current_level_name = "level2"
-
-    if "level_data" not in st.session_state:
-        level_config = game_config.level_config
-        st.session_state.level_data = json.loads(level_config)
-
-    # ---------------- INTERACTIVE LEVEL ELEMENTS ----------------
-
-    # ---------------- creating player html ----------------
-
-    if "player" not in st.session_state:
-        temp = st.session_state.level_data["players_stats"]
-        temp_xy = st.session_state.level_data[current_level_name]["player_xy"]
-
-        # ------------------------------------------------------------
-    #
-    #             fetching level data from csv
-    #
-    # ------------------------------------------------------------
-
-    # fetch level with certain number
-    df = fetch_data()
-    if "level" not in st.session_state:  # or st.session_state["level_change"]:
-        st.session_state["level"] = df.values
 
     with st.sidebar:
         st.write("Use keyboard arrows or buttons below")
@@ -138,8 +108,18 @@ if st.session_state.token:  # Check if token is present
 
         start_row, end_row = st.slider("Rows", 0, 222, (0, 10))
         start_col, end_col = st.slider("Columns", 0, 5, (0, 2))
+    # --------------- dataset config ------------------------
+    demo_datasets = {
+        "AnTuTu 2022 cross-platform benchmarks📊": "antutu_android_vs_ios_v3",
+        "Mendeley's 2020 Clinical Dataset of the CYP-GUIDES Trial": "clinical",
+        "VGChartz 2016 Annual Sales": "vgsales",
+    }
+    selected_dataset = st.selectbox("Select a dataset", list(demo_datasets.keys()))
 
-    render_table(start_row, end_row, start_col, end_col)
-
+    current_dataset_name = demo_datasets[selected_dataset]
+    if selected_dataset != "Select a dataset":
+        render_table(current_dataset_name, start_row, end_row, start_col, end_col)
+    if "level" not in st.session_state:  # or st.session_state["level_change"]:
+        st.session_state["level"] = "DEBUG_DUMMY_CURRENT_LEVEL"
 else:
     st.warning("Please log in")

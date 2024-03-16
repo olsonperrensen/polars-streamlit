@@ -256,37 +256,6 @@ def tile_html(src, x, y, z):
     return f"""<img src="{src}" style="grid-column-start: {x}; grid-row-start: {y}; grid-column-end:{z}">"""
 
 
-def additional_layers_html(level_name, layer_name, coordinates="xy"):
-    """
-    Generate HTML for additional layer elements such as torches, boxes, and voids.
-
-    Args:
-        level_name (str): The name of the level for which the additional layers are to be generated.
-        layer_name (str): The name of the layer within the level for which the additional layers are to be generated.
-        coordinates (str, optional): The coordinate system to be used. Default is 'xy', which sets z = x.
-                                      If set to 'xyz', the z-coordinate from the layer data will be used.
-
-    Returns:
-        str: The generated HTML string for the specified additional layer elements.
-    """
-    name = ""
-
-    for layer_item in st.session_state.level_data[level_name][layer_name]:
-        temp = st.session_state.level_data[level_name][layer_name][layer_item]
-
-        # Set z-coordinate based on input
-        z = temp["z"] if coordinates == "xyz" else temp["x"]
-
-        name += tile_html(
-            src=game_config.tileset[temp["text"]],
-            x=temp["x"],
-            y=temp["y"],
-            z=z,
-        )
-
-    return name
-
-
 # ------------------------------------------------------------
 #
 #                game objects functions
@@ -351,28 +320,3 @@ def create_text_bubble_html(text, x, y):
             <div style="position: absolute; top: 40%; left: 50%; transform: translate(-50%, -50%); font-size:0.875rem;">{text}</div>
         </div>
     """
-
-
-def get_text_boxes(player_x, player_y, level_name):
-    """Get the text bubble at the player's current position in the given level.
-
-    Args:
-        player_x: An integer representing the x position of the player.
-        player_y: An integer representing the y position of the player.
-        level_name: A string representing the name of the level.
-
-    Returns:
-        A string containing the HTML code for the text bubble at the player's position.
-    """
-    result = ""
-    level_data = st.session_state.level_data.get(level_name, {})
-    bubble_data = level_data.get("bubbles", {})
-    for bubble_name, data in bubble_data.items():
-        if data.get("x") == player_x and data.get("y") == player_y:
-            result = create_text_bubble_html(data.get("text"), player_x, player_y - 1)
-
-    if st.session_state.bubble_text:
-        result = st.session_state.bubble_text
-        st.session_state.bubble_text = ""
-
-    return result
