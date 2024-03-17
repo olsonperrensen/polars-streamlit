@@ -6,3 +6,5 @@ great_tables
 polars
 python-multipart
 st_pages
+seaborn
+pip
