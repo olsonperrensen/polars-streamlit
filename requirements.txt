@@ -7,4 +7,3 @@ uvicorn[standard]
 pyjwt
 python-multipart
 pip
-gunicorn
