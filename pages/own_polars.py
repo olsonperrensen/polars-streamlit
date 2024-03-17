@@ -4,6 +4,7 @@ import streamlit as st
 import requests
 import json
 import traceback
+import os
 from st_pages import hide_pages
 
 
@@ -54,8 +55,9 @@ if st.session_state.token:
         # Encode the polars code in a JSON format
         data = {"polars_code": sanitized_code}
 
+        auth_url = os.environ.get("AUTH_ENDPOINT_URL", "http://localhost:8000")
         # Send the polars code over a HTTP body POST request
-        response = requests.post("http://localhost:8000/own_polars", json=data)
+        response = requests.post(f"{auth_url}/own_polars", json=data)
 
         # Display the response from the server
         data_dict = json.loads(response.text)

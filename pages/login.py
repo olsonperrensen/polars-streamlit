@@ -1,5 +1,6 @@
 import streamlit as st
 import requests
+import os
 
 # Initialize session_state to store token
 if "token" not in st.session_state:
@@ -19,9 +20,10 @@ password = password_placeholder.text_input("Password", "password1", type="passwo
 login_button = login_button.button("Login")
 if login_button:
     # Authentication endpoint to obtain JWT token
-    auth_url = "http://localhost:8000/token"
+    # Get authentication endpoint URL from environment variable or secret
+    auth_url = os.environ.get("AUTH_ENDPOINT_URL", "http://localhost:8000")
     auth_response = requests.post(
-        auth_url, data={"username": username, "password": password}
+        f"{auth_url}/token", data={"username": username, "password": password}
     )
 
     if auth_response.status_code == 200:

@@ -1,6 +1,7 @@
 import streamlit as st
 import requests
 import json
+import os
 from st_pages import hide_pages
 
 if "token" not in st.session_state:
@@ -11,8 +12,9 @@ if st.session_state.token:  # Check if token is present
     send = st.button("send")
 
     if send:
+        auth_url = os.environ.get("AUTH_ENDPOINT_URL", "http://localhost:8000")
         r = requests.post(
-            "http://localhost:8000/protected",
+            f"{auth_url}/protected",
             headers={"Authorization": f"Bearer {st.session_state.token}"},
         )
         if r.status_code == 200:
