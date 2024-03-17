@@ -8,7 +8,7 @@ import seaborn as sns
 
 show_pages(
     [
-        Page("HK3lab.py", "Home", "🏠"),
+        Page("streamlit_app.py", "Home", "🏠"),
         Page("pages/login.py", "Login", "🔐"),
         Page("pages/explore.py", "Explore", "🔍"),
         Page("pages/llm.py", "LLM", "🤖"),
