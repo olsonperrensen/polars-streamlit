@@ -1,4 +1,0 @@
-[server]
-port = 80
-maxUploadSize = 2048
-maxMessageSize = 2048
