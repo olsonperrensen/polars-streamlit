@@ -31,7 +31,10 @@ if login_button:
         st.success("Login successful! Redirecting you to the uploads section.")
         username_placeholder.text("")
         password_placeholder.text("")
-        st.switch_page("pages/Explore.py")
+        try:
+            st.switch_page("pages/explore.py")
+        except Exception as e:
+            print(e)
 
     elif auth_response.status_code == 401:
         image_path = "assets/unauthorized_image.png"
