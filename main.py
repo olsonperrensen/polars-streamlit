@@ -10,9 +10,25 @@ import jwt
 from pydantic import BaseModel
 import altair as alt
 import plotly.express as px
+import socket
+import sys
 
 
 app = FastAPI()
+
+hostname = socket.gethostname()
+
+version = f"{sys.version_info.major}.{sys.version_info.minor}"
+
+
+@app.get("/")
+async def read_root():
+    return {
+        "name": "my-app",
+        "host": hostname,
+        "version": f"Hello world! From FastAPI running on Uvicorn. Using Python {version}",
+    }
+
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
