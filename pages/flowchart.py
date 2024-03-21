@@ -40,4 +40,4 @@ if expression:
 
         graph_string += "}"
 
-st.graphviz_chart(graph_string)
+    st.graphviz_chart(graph_string)
