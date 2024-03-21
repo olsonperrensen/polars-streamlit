@@ -1,4 +1,16 @@
 import streamlit as st
+from st_pages import show_pages, Page
+
+show_pages(
+    [
+        Page("streamlit_app.py", "Home", "🏠"),
+        Page("pages/login.py", "Login", "🔐"),
+        Page("pages/explore.py", "Explore", "🔍"),
+        Page("pages/llm.py", "LLM", "🤖"),
+        Page("pages/own_polars.py", "Own Polars", "🐻‍❄️"),
+        Page("pages/process.py", "Process", "⚙️"),
+    ]
+)
 
 
 st.subheader("| Intro")
