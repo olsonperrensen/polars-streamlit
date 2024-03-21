@@ -9,6 +9,7 @@ show_pages(
         Page("pages/llm.py", "LLM", "🤖"),
         Page("pages/own_polars.py", "Own Polars", "🐻‍❄️"),
         Page("pages/process.py", "Process", "⚙️"),
+        Page("pages/flowchart.py", "Flowchart", "📊"),
     ]
 )
 
