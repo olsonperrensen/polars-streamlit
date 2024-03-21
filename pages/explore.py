@@ -6,7 +6,7 @@ from lib import game_def, game_config
 from st_pages import hide_pages
 import seaborn as sns
 
-hide_pages(["Explore", "Login", "LLM", "Own Polars", "Process"])
+hide_pages(["Explore", "Login", "LLM", "Own Polars", "Process", "Flowchart"])
 
 if "token" not in st.session_state:
     st.switch_page("pages/login.py")

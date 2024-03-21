@@ -2,14 +2,12 @@ import streamlit as st
 import requests
 import json
 import os
-from st_pages import hide_pages
 import traceback
 
 if "token" not in st.session_state:
     st.switch_page("pages/login.py")
 
 if st.session_state.token:  # Check if token is present
-    hide_pages(["Login"])
     send = st.button("send")
 
     if send:
