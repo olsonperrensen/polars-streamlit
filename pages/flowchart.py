@@ -1,43 +1,49 @@
 import streamlit as st
 
-st.title("Polars Expression Graph")
+if "token" not in st.session_state:
+    st.switch_page("pages/login.py")
 
-expression = st.text_input(
-    """Enter Polars expressions separated by semicolons: example below\n 
-    DataFrame({
-        'col1': ['string_' + str(i) for i in range(10)],
-        'col2': ['another_string_' + str(i) for i in range(10)]
-    }).lazy()        
-    """,
-    key="input_key",
-)
+if st.session_state.token:  # Check if token is present
+    st.title("Polars Expression Graph")
 
-if expression:
-    nodes = []
-    inside_method_call = False
-    current_node = ""
+    expression = st.text_input(
+        """Enter Polars expressions separated by semicolons: example below\n 
+        DataFrame({
+            'col1': ['string_' + str(i) for i in range(10)],
+            'col2': ['another_string_' + str(i) for i in range(10)]
+        }).lazy()        
+        """,
+        key="input_key",
+    )
 
-    for char in expression:
-        if char == "(":
-            inside_method_call = True
+    if expression:
+        nodes = []
+        inside_method_call = False
+        current_node = ""
 
-        if char == ")":
-            inside_method_call = False
+        for char in expression:
+            if char == "(":
+                inside_method_call = True
 
-        if char == ";" and not inside_method_call:
-            nodes.append(current_node.strip())
-            current_node = ""
-        else:
-            current_node += char
+            if char == ")":
+                inside_method_call = False
 
-    # Append the last node after loop ends
-    nodes.append(current_node.strip())
+            if char == ";" and not inside_method_call:
+                nodes.append(current_node.strip())
+                current_node = ""
+            else:
+                current_node += char
 
-    if len(nodes) > 0:
-        graph_string = "digraph {"
-        for i, node in enumerate(nodes):
-            graph_string += f'"{node}";'
+        # Append the last node after loop ends
+        nodes.append(current_node.strip())
 
-        graph_string += "}"
+        if len(nodes) > 0:
+            graph_string = "digraph {"
+            for i, node in enumerate(nodes):
+                graph_string += f'"{node}";'
 
-    st.graphviz_chart(graph_string)
+            graph_string += "}"
+
+        st.graphviz_chart(graph_string)
+else:
+    st.warning("Please log in")
