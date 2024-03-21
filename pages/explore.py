@@ -3,19 +3,9 @@ import polars as pl
 from polars.exceptions import ComputeError, PolarsError
 import json
 from lib import game_def, game_config
-from st_pages import Page, show_pages, hide_pages
+from st_pages import hide_pages
 import seaborn as sns
 
-show_pages(
-    [
-        Page("streamlit_app.py", "Home", "🏠"),
-        Page("pages/login.py", "Login", "🔐"),
-        Page("pages/explore.py", "Explore", "🔍"),
-        Page("pages/llm.py", "LLM", "🤖"),
-        Page("pages/own_polars.py", "Own Polars", "🐻‍❄️"),
-        Page("pages/process.py", "Process", "⚙️"),
-    ]
-)
 hide_pages(["Explore", "Login", "LLM", "Own Polars", "Process"])
 
 if "token" not in st.session_state:
