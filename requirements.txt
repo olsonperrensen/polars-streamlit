@@ -8,3 +8,4 @@ python-multipart
 st_pages
 seaborn
 pip
+icecream
