@@ -1,10 +1,15 @@
 # backend.py
-from fastapi import FastAPI
+from base64 import b64encode
+from typing import List
+from fastapi import FastAPI, HTTPException, Response
 import os
 import polars as pl
 import plotly.express as px
 import altair as alt
 from pydantic import BaseModel
+from dash import html
+from IPython.display import Image
+
 
 app = FastAPI()
 
@@ -14,8 +19,12 @@ root_dir = "data\\A\\B"
 
 class PlotRequest(BaseModel):
     parquet_file: str
-    columns: list
+    columns: List[str]
     num_rows: int
+    x_axis: str
+    y_axis: str
+    z_axis: str
+    color_axis: str
 
 
 @app.get("/patients")
@@ -33,7 +42,7 @@ def get_data_types():
 def get_parquet_files(patient_dir: str, data_type: str):
     dir_path = os.path.join(root_dir, patient_dir, f"{data_type}\\.csv format")
     parquet_files = [
-        os.path.join(dir_path, f)
+        os.path.join(dir_path, f.replace("\\", "\\\\"))
         for f in os.listdir(dir_path)
         if f.endswith(".parquet")
     ]
@@ -48,13 +57,39 @@ def get_column_names(parquet_file: str):
 
 @app.post("/plot_3d")
 def plot_3d(request: PlotRequest):
+    if (
+        not request.parquet_file
+        or not request.columns
+        or not request.num_rows
+        or not request.x_axis
+        or not request.y_axis
+        or not request.z_axis
+        or not request.color_axis
+    ):
+        raise HTTPException(status_code=400, detail="Missing required arguments")
+
     df = pl.read_parquet(
         request.parquet_file, columns=request.columns, n_rows=request.num_rows
     )
     df_pd = df.to_pandas()
-    fig = px.scatter_3d(df_pd, x="AF3", y="FC6", z="P8", color="O1", opacity=0.7)
-    fig.update_layout(scene=dict(xaxis_title="F8", yaxis_title="T7", zaxis_title="O2"))
-    return fig.to_json()
+    fig = px.scatter_3d(
+        df_pd,
+        x=request.x_axis,
+        y=request.y_axis,
+        z=request.z_axis,
+        color=request.color_axis,
+        opacity=0.7,
+    )
+    fig.update_layout(
+        scene=dict(
+            xaxis_title=request.x_axis,
+            yaxis_title=request.y_axis,
+            zaxis_title=request.z_axis,
+        )
+    )
+    img_bytes = fig.to_image(format="png", width=600, height=350, scale=2)
+
+    return Response(content=img_bytes, media_type="image/png")
 
 
 @app.post("/heatmap")
