@@ -2,76 +2,57 @@ import streamlit as st
 import requests
 import json
 import plotly.graph_objects as go
+import time
 
 # Set the API endpoint URL
 API_URL = "http://localhost:8000"
 
 
 def app():
+    # Display the loading screen
+    with st.spinner("loading data..."):
+        # Simulate user authentication and data loading
+        # TODO auth
+
+        # Load data in the background
+        patient_dirs = load_patients()
+        data_types = load_data_types()
+        parquet_file_paths, column_names, max_rows = None, None, None
+
     st.title("EEG Data Explorer")
 
     # Initialize the session state
     if "steps" not in st.session_state:
         st.session_state.steps = []
 
-    # Get the list of patients from the backend (cached)
-    @st.cache_data
-    def get_patients():
-        response = requests.get(f"{API_URL}/patients")
-        return response.json()
-
-    patient_dirs = get_patients()
-
     # Allow the user to select a patient
     patient_dir = st.selectbox("Select a patient", patient_dirs)
-
-    # Get the list of data types from the backend (cached)
-    @st.cache_data
-    def get_data_types():
-        response = requests.get(f"{API_URL}/data_types")
-        return response.json()
-
-    data_types = get_data_types()
 
     # Allow the user to select the data type
     data_type = st.selectbox("Select data type", data_types)
 
     # Get the list of Parquet files for the selected patient and data type from the backend (cached)
-    @st.cache_data
-    def get_parquet_files(patient_dir, data_type):
-        response = requests.get(
-            f"{API_URL}/parquet_files",
-            params={"patient_dir": patient_dir, "data_type": data_type},
+    if patient_dir and data_type:
+        parquet_file_paths, column_names, max_rows = load_parquet_files(
+            patient_dir, data_type
         )
-        return response.json()
-
-    parquet_file_paths = get_parquet_files(patient_dir, data_type)
 
     # Allow the user to select a Parquet file
     parquet_file = st.selectbox("Select a Parquet file", parquet_file_paths)
-
-    @st.cache_data
-    def get_column_names(parquet_file):
-        response = requests.get(
-            f"{API_URL}/column_names", params={"parquet_file": parquet_file}
-        )
-        data = response.json()
-        return data["column_names"], data["row_count"]
-
-    column_names, max_rows = get_column_names(parquet_file)
 
     # Allow the user to select columns
     with st.expander("Select Columns"):
         selected_columns = st.multiselect(
             "Columns to use", column_names, default=column_names[:4]
         )
+
     # Allow the user to specify the number of rows to load
     num_rows = st.number_input(
         "Number of rows to load",
         min_value=1,
-        value=max_rows[0] // 100,
+        value=max_rows // 100,
         step=1,
-        max_value=max_rows[0],
+        max_value=max_rows,
     )
 
     # Allow the user to specify the columns for each axis
@@ -127,6 +108,39 @@ def app():
                 st.plotly_chart(fig)
             else:
                 st.image(response.content, use_column_width=True)
+
+
+@st.cache_data
+def load_patients():
+    response = requests.get(f"{API_URL}/patients")
+    return response.json()
+
+
+@st.cache_data
+def load_data_types():
+    response = requests.get(f"{API_URL}/data_types")
+    return response.json()
+
+
+@st.cache_data
+def load_parquet_files(patient_dir, data_type):
+    response = requests.get(
+        f"{API_URL}/parquet_files",
+        params={"patient_dir": patient_dir, "data_type": data_type},
+    )
+    parquet_file_paths = response.json()
+
+    # Get column names and row count for the first file
+    if parquet_file_paths:
+        response = requests.get(
+            f"{API_URL}/column_names", params={"parquet_file": parquet_file_paths[0]}
+        )
+        data = response.json()
+        column_names, row_count = data["column_names"], data["row_count"]
+    else:
+        column_names, row_count = [], 0
+
+    return parquet_file_paths, column_names, row_count
 
 
 if __name__ == "__main__":
