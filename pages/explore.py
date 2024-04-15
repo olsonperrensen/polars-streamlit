@@ -6,6 +6,7 @@ import plotly.graph_objects as go
 # Set the API endpoint URL
 API_URL = "http://localhost:8000"
 
+
 def app():
     st.title("EEG Data Explorer")
 
@@ -61,7 +62,9 @@ def app():
 
     # Allow the user to select columns
     with st.expander("Select Columns"):
-        selected_columns = st.multiselect("Columns to use", column_names, default=column_names[:3])
+        selected_columns = st.multiselect(
+            "Columns to use", column_names, default=column_names[:4]
+        )
 
     # Allow the user to specify the number of rows to load
     num_rows = st.number_input("Number of rows to load", min_value=1, value=100, step=1)
@@ -119,6 +122,7 @@ def app():
                 st.plotly_chart(fig)
             else:
                 st.image(response.content, use_column_width=True)
+
 
 if __name__ == "__main__":
     app()
