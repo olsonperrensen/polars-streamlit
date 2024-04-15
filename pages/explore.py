@@ -1,15 +1,11 @@
-# app.py
 import streamlit as st
 import requests
 import json
 import plotly.graph_objects as go
 
-
 # Set the API endpoint URL
 API_URL = "http://localhost:8000"
 
-
-# Define the Streamlit app
 def app():
     st.title("EEG Data Explorer")
 
@@ -64,17 +60,23 @@ def app():
     column_names = get_column_names(parquet_file)
 
     # Allow the user to select columns
-    selected_columns = st.multiselect("Select columns to use", column_names)
+    with st.expander("Select Columns"):
+        selected_columns = st.multiselect("Columns to use", column_names, default=column_names[:3])
 
     # Allow the user to specify the number of rows to load
-    num_rows = st.number_input("Number of rows to load", min_value=1, value=100)
+    num_rows = st.number_input("Number of rows to load", min_value=1, value=100, step=1)
 
     # Allow the user to specify the columns for each axis
-    x_axis = st.selectbox("X-axis", selected_columns)
-    y_axis = st.selectbox("Y-axis", selected_columns)
-    z_axis = st.selectbox("Z-axis", selected_columns)
-    color_axis = st.selectbox("Color axis", selected_columns)
-    interactive_plot = st.checkbox("Interactive Plot")
+    with st.expander("Axis and Color Settings"):
+        col1, col2, col3 = st.columns(3)
+        with col1:
+            x_axis = st.selectbox("X-axis", selected_columns, index=0)
+        with col2:
+            y_axis = st.selectbox("Y-axis", selected_columns, index=1)
+        with col3:
+            z_axis = st.selectbox("Z-axis", selected_columns, index=2)
+        color_axis = st.selectbox("Color axis", selected_columns)
+        interactive_plot = st.checkbox("Interactive Plot", value=True)
 
     # Check if all required fields are completed
     all_fields_completed = (
@@ -117,27 +119,6 @@ def app():
                 st.plotly_chart(fig)
             else:
                 st.image(response.content, use_column_width=True)
-
-    # with tab2:
-    #     st.subheader("Heatmap")
-    #     if st.session_state.steps:
-    #         # Send a request to the backend with the collected steps
-    #         response = requests.post(
-    #             f"{API_URL}/heatmap", json=st.session_state.steps[-1]
-    #         )
-    #         fig = response.json()
-    #         st.plotly_chart(fig)
-
-    # with tab3:
-    #     st.subheader("Line Chart")
-    #     if st.session_state.steps:
-    #         # Send a request to the backend with the collected steps
-    #         response = requests.post(
-    #             f"{API_URL}/line_chart", json=st.session_state.steps[-1]
-    #         )
-    #         chart = response.json()
-    #         st.altair_chart(chart)
-
 
 if __name__ == "__main__":
     app()
