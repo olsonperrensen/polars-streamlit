@@ -3,6 +3,11 @@ import requests
 import json
 import plotly.graph_objects as go
 import altair as alt
+import datetime
+import time
+from collections import deque
+import pytz
+from pynput import mouse
 
 # Set the API endpoint URL
 API_URL = "http://localhost:8000"
@@ -16,8 +21,53 @@ st.set_page_config(
 
 alt.themes.enable("dark")  # Enable dark theme
 
+# Initialize the activity log
+activity_log = deque(maxlen=100)
+
+# Initialize the timestamps
+start_time = None
+end_time = None
+
+# Initialize the mouse positions
+mouse_positions = deque(maxlen=100)
+
+# Mouse controller (for setting the cursor position)
+mouse_controller = mouse.Controller()
+
+
+# Function to log user activity
+def log_activity(message):
+    timestamp = datetime.datetime.now(pytz.utc).strftime("%Y-%m-%d %H:%M:%S.%f %Z")
+    print(f"LOGGING...{message}")
+    activity_log.append(f"{timestamp} - {message}")
+
+
+# Function to track mouse position
+def track_mouse_position(position):
+    mouse_positions.append(position)
+
+
+# Mouse movement event handler
+def on_move(x, y):
+    log_activity(f"Mouse position: ({x}, {y})")
+    track_mouse_position((x, y))
+
+
+# Mouse listener
+mouse_listener = mouse.Listener(on_move=on_move)
+
 
 def app():
+    # Get the start time
+    global start_time
+    start_time = time.time()
+
+    # Log the start of the session
+    log_activity("User started the session")
+
+    # Start the mouse listener
+    mouse_listener.start()
+
     # Initialize the session state
     if "steps" not in st.session_state:
         st.session_state.steps = []
@@ -49,14 +99,32 @@ def app():
         ]
         selected_color_theme = st.selectbox("Select a color theme", color_theme_list)
 
+        # Log patient selection
+        if patient_dir:
+            log_activity(f"Selected patient: {patient_dir}")
+
+        # Log data type selection
+        if data_type:
+            log_activity(f"Selected data type: {data_type}")
+
+        # Log color theme selection
+        if selected_color_theme:
+            log_activity(f"Selected color theme: {selected_color_theme}")
+
         st.markdown("---")  # Add a horizontal line
-        log_file = "\n".join(st.session_state.activity_log)
-        st.download_button(
+        log_file = "\n".join(activity_log)
+
+        # Download log file button
+        if st.download_button(
             label="Download log file",
             data=log_file,
             file_name="activity_log.txt",
             mime="text/plain",
-        )
+        ):
+            # Write the log to a file
+            with open("activity_log.txt", "w") as log_file:
+                for entry in activity_log:
+                    log_file.write(entry + "\n")
 
     # Main content area
     if patient_dir and data_type:
@@ -94,22 +162,47 @@ def app():
                 color_axis = st.selectbox("Color axis", selected_columns)
                 interactive_plot = st.checkbox("Interactive Plot", value=True)
 
-            # Save preferences button
-            if st.button("Save preferences"):
-                step = {
-                    "parquet_file": parquet_file,
-                    "columns": selected_columns,
-                    "num_rows": num_rows,
-                    "x_axis": x_axis,
-                    "y_axis": y_axis,
-                    "z_axis": z_axis,
-                    "color_axis": color_axis,
-                    "interactive_plot": interactive_plot,
-                }
-                st.session_state.steps.append(step)
-                st.session_state.activity_log.append(
-                    f"Saved preferences: {parquet_file}, {', '.join(selected_columns)}, {num_rows} rows"
-                )
+        # Log Parquet file selection
+        if parquet_file:
+            log_activity(f"Selected Parquet file: {parquet_file}")
+
+        # Log column selection
+        if selected_columns:
+            log_activity(f"Selected columns: {', '.join(selected_columns)}")
+
+        # Log number of rows selection
+        if num_rows:
+            log_activity(f"Selected number of rows: {num_rows}")
+
+        # Log axis selections
+        if x_axis:
+            log_activity(f"Selected X-axis: {x_axis}")
+        if y_axis:
+            log_activity(f"Selected Y-axis: {y_axis}")
+        if z_axis:
+            log_activity(f"Selected Z-axis: {z_axis}")
+        if color_axis:
+            log_activity(f"Selected color axis: {color_axis}")
+
+        # Log interactive plot selection
+        if interactive_plot is not None:
+            log_activity(f"Selected interactive plot: {interactive_plot}")
+
+        if st.button("Save preferences"):
+            step = {
+                "parquet_file": parquet_file,
+                "columns": selected_columns,
+                "num_rows": num_rows,
+                "x_axis": x_axis,
+                "y_axis": y_axis,
+                "z_axis": z_axis,
+                "color_axis": color_axis,
+                "interactive_plot": interactive_plot,
+            }
+            st.session_state.steps.append(step)
+            st.session_state.activity_log.append(
+                f"Saved preferences: {parquet_file}, {', '.join(selected_columns)}, {num_rows} rows"
+            )
 
         # Visualization tabs
         tab1, tab2, tab3 = st.tabs(["Interactive 3D Plot", "Heatmap", "Line Chart"])
@@ -123,12 +216,12 @@ def app():
                     raw_res = json.loads(response.json())
                     fig = go.Figure(data=raw_res["data"], layout=raw_res["layout"])
                     st.plotly_chart(fig)
-                    st.session_state.activity_log.append(
+                    log_activity(
                         f"Displayed interactive 3D plot for {last_step['parquet_file']}"
                     )
                 else:
                     st.image(response.content, use_column_width=True)
-                    st.session_state.activity_log.append(
+                    log_activity(
                         f"Displayed static 3D plot for {last_step['parquet_file']}"
                     )
 
@@ -153,6 +246,20 @@ def app():
             )
 
         if st.button("LLM"):
+            # Get the end time
+            global end_time
+            end_time = time.time()
+
+            # Log the end of the session
+            log_activity("User ended the session")
+
+            # Calculate the total time spent
+            total_time_spent = end_time - start_time
+            log_activity(f"Total time spent on the app: {total_time_spent:.2f} seconds")
+            # Log the mouse positions
+            log_activity("Mouse positions:")
+            for position in mouse_positions:
+                log_activity(str(position))
             try:
                 st.switch_page("pages/llm.py")
             except Exception as e:
