@@ -9,3 +9,5 @@ st_pages
 seaborn
 pip
 icecream
+aiohttp
+selenium
