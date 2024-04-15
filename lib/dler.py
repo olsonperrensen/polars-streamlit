@@ -6,6 +6,7 @@ from typing import Optional
 import concurrent.futures
 from tqdm import tqdm
 from icecream import ic
+import tempfile
 
 
 async def download_chunk(session, url, start, end, chunk_size, file_path, progress_bar):
@@ -87,6 +88,53 @@ async def download_zip_file(
             ic("ZIP file integrity check passed!")
         except BadZipFile:
             return "Error: The downloaded ZIP file is corrupted."
+
+        ic("Checking the contents of the ZIP file...")
+        with ZipFile(save_path, "r") as zipf:
+            namelist = zipf.namelist()
+            ic(f"Contents of the ZIP file: {namelist}")
+
+            if namelist:
+                ic("Renaming folders inside the ZIP file...")
+                # Get the name of the root folder
+                root_folder = namelist[0].split("/")[0]
+                ic(f"Root folder: {root_folder}")
+
+                # Create a temporary directory to store the modified ZIP contents
+                with tempfile.TemporaryDirectory() as temp_dir:
+                    # Extract the ZIP contents to the temporary directory
+                    zipf.extractall(temp_dir)
+
+                    # Rename the root folder to "A"
+                    old_root_path = os.path.join(temp_dir, root_folder)
+                    new_root_path = os.path.join(temp_dir, "A")
+                    os.rename(old_root_path, new_root_path)
+                    ic("Root folder renamed to 'A'")
+
+                    # Rename the subfolder from "GAMEEMO" to "B"
+                    old_subfolder_path = os.path.join(new_root_path, "GAMEEMO")
+                    new_subfolder_path = os.path.join(new_root_path, "B")
+                    os.rename(old_subfolder_path, new_subfolder_path)
+                    ic("Subfolder renamed from 'GAMEEMO' to 'B'")
+
+                    # Delete all .mat files inside the temporary directory
+                    for root, dirs, files in os.walk(temp_dir):
+                        for file in files:
+                            if file.endswith(".mat"):
+                                os.remove(os.path.join(root, file))
+                    ic("All .mat files deleted from the ZIP")
+
+                    # Create a new ZIP file with the modified contents
+                    with ZipFile(save_path, "w") as new_zipf:
+                        for root, dirs, files in os.walk(temp_dir):
+                            for file in files:
+                                file_path = os.path.join(root, file)
+                                new_zipf.write(
+                                    file_path, os.path.relpath(file_path, temp_dir)
+                                )
+                    ic("Modified ZIP file written")
+            else:
+                ic("ZIP file is empty. Skipping renaming process.")
 
         ic(f"Extracting ZIP file to '{extract_dir}'...")
         with ZipFile(save_path, "r") as zipf:
