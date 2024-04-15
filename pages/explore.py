@@ -50,24 +50,29 @@ def app():
     # Allow the user to select a Parquet file
     parquet_file = st.selectbox("Select a Parquet file", parquet_file_paths)
 
-    # Get the column names from the backend (cached)
     @st.cache_data
     def get_column_names(parquet_file):
         response = requests.get(
             f"{API_URL}/column_names", params={"parquet_file": parquet_file}
         )
-        return response.json()
+        data = response.json()
+        return data["column_names"], data["row_count"]
 
-    column_names = get_column_names(parquet_file)
+    column_names, max_rows = get_column_names(parquet_file)
 
     # Allow the user to select columns
     with st.expander("Select Columns"):
         selected_columns = st.multiselect(
             "Columns to use", column_names, default=column_names[:4]
         )
-
     # Allow the user to specify the number of rows to load
-    num_rows = st.number_input("Number of rows to load", min_value=1, value=100, step=1)
+    num_rows = st.number_input(
+        "Number of rows to load",
+        min_value=1,
+        value=max_rows[0] // 100,
+        step=1,
+        max_value=max_rows[0],
+    )
 
     # Allow the user to specify the columns for each axis
     with st.expander("Axis and Color Settings"):
