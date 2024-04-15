@@ -21,6 +21,8 @@ def app():
     # Initialize the session state
     if "steps" not in st.session_state:
         st.session_state.steps = []
+    if "activity_log" not in st.session_state:
+        st.session_state.activity_log = []
 
     # Sidebar
     with st.sidebar:
@@ -33,8 +35,6 @@ def app():
         # Select data type
         data_type = st.selectbox("Select data type", load_data_types())
 
-    # Right Sidebar
-    with st.sidebar.container():
         color_theme_list = [
             "blues",
             "cividis",
@@ -48,6 +48,15 @@ def app():
             "viridis",
         ]
         selected_color_theme = st.selectbox("Select a color theme", color_theme_list)
+
+        st.markdown("---")  # Add a horizontal line
+        log_file = "\n".join(st.session_state.activity_log)
+        st.download_button(
+            label="Download log file",
+            data=log_file,
+            file_name="activity_log.txt",
+            mime="text/plain",
+        )
 
     # Main content area
     if patient_dir and data_type:
@@ -98,6 +107,9 @@ def app():
                     "interactive_plot": interactive_plot,
                 }
                 st.session_state.steps.append(step)
+                st.session_state.activity_log.append(
+                    f"Saved preferences: {parquet_file}, {', '.join(selected_columns)}, {num_rows} rows"
+                )
 
         # Visualization tabs
         tab1, tab2, tab3 = st.tabs(["Interactive 3D Plot", "Heatmap", "Line Chart"])
@@ -111,8 +123,14 @@ def app():
                     raw_res = json.loads(response.json())
                     fig = go.Figure(data=raw_res["data"], layout=raw_res["layout"])
                     st.plotly_chart(fig)
+                    st.session_state.activity_log.append(
+                        f"Displayed interactive 3D plot for {last_step['parquet_file']}"
+                    )
                 else:
                     st.image(response.content, use_column_width=True)
+                    st.session_state.activity_log.append(
+                        f"Displayed static 3D plot for {last_step['parquet_file']}"
+                    )
 
         with tab2:
             pass
