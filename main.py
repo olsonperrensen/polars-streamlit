@@ -1,122 +1,83 @@
-# TODO add Pydantic class to add validation of classes
-from fastapi import FastAPI, Depends, HTTPException, Form, UploadFile, File
-from fastapi.responses import HTMLResponse, JSONResponse
-from great_tables import GT, html
-from great_tables.data import sza
-from polars import DataFrame, scan_parquet
-import polars.selectors as cs
-from fastapi.security import OAuth2PasswordBearer
-import jwt
-from pydantic import BaseModel
-import altair as alt
+# backend.py
+from fastapi import FastAPI
+import os
+import polars as pl
 import plotly.express as px
-import socket
-import sys
-
+import altair as alt
+from pydantic import BaseModel
 
 app = FastAPI()
 
-hostname = socket.gethostname()
-
-version = f"{sys.version_info.major}.{sys.version_info.minor}"
-
-
-@app.get("/")
-async def read_root():
-    return {
-        "name": "my-app",
-        "host": hostname,
-        "version": f"Hello world! From FastAPI running on Uvicorn. Using Python {version}",
-    }
+# Set the root directory
+root_dir = "data\\A\\B"
 
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
-
-SECRET_KEY = "GEHEIM123"
-ALGORITHM = "HS256"
-
-# Mock user data
-users = {"user1": {"username": "user1", "password": "password1"}}
+class PlotRequest(BaseModel):
+    parquet_file: str
+    columns: list
+    num_rows: int
 
 
-# Generate JWT token
-def create_access_token(data: dict):
-    encoded_jwt = jwt.encode(data, SECRET_KEY, algorithm=ALGORITHM)
-    return encoded_jwt
+@app.get("/patients")
+def get_patients():
+    patient_dirs = [d for d in os.listdir(root_dir) if d.startswith("(S")]
+    return patient_dirs
 
 
-# Verify JWT token
-def decode_token(token: str):
-    try:
-        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        username = payload.get("sub")
-        if username is None:
-            raise HTTPException(status_code=403, detail="Invalid token")
-        return username
-    except jwt.ExpiredSignatureError:
-        raise HTTPException(status_code=403, detail="Token has expired")
-    except jwt.JWTError:
-        raise HTTPException(status_code=403, detail="Invalid token")
+@app.get("/data_types")
+def get_data_types():
+    return ["Preprocessed EEG Data", "Raw EEG Data"]
 
 
-# Create a route to generate JWT token after authentication
-@app.post("/token")
-def login(username: str = Form(...), password: str = Form(...)):
-    user = users.get(username)
-    if user is None or user["password"] != password:
-        raise HTTPException(status_code=401, detail="Invalid credentials")
-
-    data = {"sub": username}
-    access_token = create_access_token(data)
-    return {"access_token": access_token, "token_type": "bearer"}
-
-
-# Protected route
-@app.post("/protected")
-async def process_file(token: str = Depends(oauth2_scheme)):
-
-    print("FASTAPI POLARS ENDPOINT REACHED")
-    username = decode_token(token)
-    if username:
-        print(f"AUTHENTICATED as {username}")
-    try:
-        # Read the Parquet file into a Polars DataFrame
-        df = scan_parquet("data.parquet", n_rows=1)
-
-        # Convert the Polars DataFrame to a JSON object
-        df_json = df.collect().write_json()
-
-        return {"data": df_json}
-    except Exception as e:
-        raise HTTPException(
-            status_code=400, detail=f"Something went wrong. Error: ```{e}```"
-        )
+@app.get("/parquet_files")
+def get_parquet_files(patient_dir: str, data_type: str):
+    dir_path = os.path.join(root_dir, patient_dir, f"{data_type}\\.csv format")
+    parquet_files = [
+        os.path.join(dir_path, f)
+        for f in os.listdir(dir_path)
+        if f.endswith(".parquet")
+    ]
+    return parquet_files
 
 
-class PolarsCode(BaseModel):
-    polars_code: str
+@app.get("/column_names")
+def get_column_names(parquet_file: str):
+    df = pl.scan_parquet(parquet_file)
+    return df.columns
 
 
-def sanitize_input(input_string: str) -> str:
-    # Implement sanitization logic here (e.g., using regex to remove unwanted characters)
-    sanitized_string = (
-        input_string.replace(";", "")
-        .replace("&", "")
-        .replace("`", "")
-        .replace("  ", "")
+@app.post("/plot_3d")
+def plot_3d(request: PlotRequest):
+    df = pl.read_parquet(
+        request.parquet_file, columns=request.columns, n_rows=request.num_rows
     )
-    return sanitized_string
+    df_pd = df.to_pandas()
+    fig = px.scatter_3d(df_pd, x="AF3", y="FC6", z="P8", color="O1", opacity=0.7)
+    fig.update_layout(scene=dict(xaxis_title="F8", yaxis_title="T7", zaxis_title="O2"))
+    return fig.to_json()
 
 
-@app.post("/own_polars")
-def process_polars_code(data: PolarsCode):
-    try:
-        sanitized_code = sanitize_input(data.polars_code)
-        df = eval(sanitized_code)
+@app.post("/heatmap")
+def heatmap(request: PlotRequest):
+    df = pl.read_parquet(
+        request.parquet_file, columns=request.columns, n_rows=request.num_rows
+    )
+    df_pd = df.to_pandas()
+    fig = px.imshow(df_pd.corr(), color_continuous_scale="RdBu_r", origin="lower")
+    fig.update_layout(title="Correlation Heatmap")
+    return fig.to_json()
 
-        # Convert the Polars DataFrame to a JSON object
-        df_json = df.collect().write_json()
 
-        return {"data": df_json}
-    except Exception as e:
-        raise HTTPException(status_code=400, detail=str(e))
+@app.post("/line_chart")
+def line_chart(request: PlotRequest):
+    df = pl.read_parquet(
+        request.parquet_file, columns=request.columns, n_rows=request.num_rows
+    )
+    df_pd = df.to_pandas()
+    chart = (
+        alt.Chart(df_pd)
+        .mark_line()
+        .encode(x="AF3", y="FC6", color="O1")
+        .properties(width=600, height=400)
+    )
+    return chart.to_json()
