@@ -66,8 +66,11 @@ def app():
     # Allow the user to specify the number of rows to load
     num_rows = st.number_input("Number of rows to load", min_value=1, value=100)
 
+    # Check if all required fields are completed
+    all_fields_completed = parquet_file and selected_columns and num_rows
+
     # Store the user's choices as steps
-    if st.button("Save preferences"):
+    if st.button("Save preferences", disabled=not all_fields_completed):
         step = {
             "parquet_file": parquet_file,
             "columns": selected_columns,
