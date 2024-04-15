@@ -2,114 +2,140 @@ import streamlit as st
 import requests
 import json
 import plotly.graph_objects as go
-import time
+import altair as alt
 
 # Set the API endpoint URL
 API_URL = "http://localhost:8000"
 
+# Set page configuration
+st.set_page_config(
+    page_title="EEG Data Explorer",
+    page_icon="📈",
+    layout="wide",
+)
+
+alt.themes.enable("dark")  # Enable dark theme
+
 
 def app():
-    # Display the loading screen
-    with st.spinner("loading data..."):
-        # Simulate user authentication and data loading
-        # TODO auth
-
-        # Load data in the background
-        patient_dirs = load_patients()
-        data_types = load_data_types()
-        parquet_file_paths, column_names, max_rows = None, None, None
-
-    st.title("EEG Data Explorer")
-
     # Initialize the session state
     if "steps" not in st.session_state:
         st.session_state.steps = []
 
-    # Allow the user to select a patient
-    patient_dir = st.selectbox("Select a patient", patient_dirs)
+    # Sidebar
+    with st.sidebar:
+        st.title("🧠 EEG Data Explorer")
 
-    # Allow the user to select the data type
-    data_type = st.selectbox("Select data type", data_types)
+        # Select patient
+        patient_dir = st.selectbox("Select a patient", load_patients())
 
-    # Get the list of Parquet files for the selected patient and data type from the backend (cached)
+        # Select data type
+        data_type = st.selectbox("Select data type", load_data_types())
+
+        # Select color theme (optional)
+        color_theme_list = [
+            "blues",
+            "cividis",
+            "greens",
+            "inferno",
+            "magma",
+            "plasma",
+            "reds",
+            "rainbow",
+            "turbo",
+            "viridis",
+        ]
+        selected_color_theme = st.selectbox("Select a color theme", color_theme_list)
+
+    # Main content area
     if patient_dir and data_type:
         parquet_file_paths, column_names, max_rows = load_parquet_files(
             patient_dir, data_type
         )
 
-    # Allow the user to select a Parquet file
-    parquet_file = st.selectbox("Select a Parquet file", parquet_file_paths)
+        col1, col2, col3 = st.columns((2, 1, 1))
 
-    # Allow the user to select columns
-    with st.expander("Select Columns"):
-        selected_columns = st.multiselect(
-            "Columns to use", column_names, default=column_names[:4]
-        )
-
-    # Allow the user to specify the number of rows to load
-    num_rows = st.number_input(
-        "Number of rows to load",
-        min_value=1,
-        value=max_rows // 100,
-        step=1,
-        max_value=max_rows,
-    )
-
-    # Allow the user to specify the columns for each axis
-    with st.expander("Axis and Color Settings"):
-        col1, col2, col3 = st.columns(3)
         with col1:
-            x_axis = st.selectbox("X-axis", selected_columns, index=0)
-        with col2:
-            y_axis = st.selectbox("Y-axis", selected_columns, index=1)
-        with col3:
-            z_axis = st.selectbox("Z-axis", selected_columns, index=2)
-        color_axis = st.selectbox("Color axis", selected_columns)
-        interactive_plot = st.checkbox("Interactive Plot", value=True)
+            # Select Parquet file
+            parquet_file = st.selectbox("Select a Parquet file", parquet_file_paths)
 
-    # Check if all required fields are completed
-    all_fields_completed = (
-        parquet_file
-        and selected_columns
-        and num_rows
-        and x_axis
-        and y_axis
-        and z_axis
-        and color_axis
-    )
+            # Select columns
+            with st.expander("Select Columns"):
+                selected_columns = st.multiselect(
+                    "Columns to use", column_names, default=column_names[:4]
+                )
 
-    # Store the user's choices as steps
-    if st.button("Save preferences", disabled=not all_fields_completed):
-        step = {
-            "parquet_file": parquet_file,
-            "columns": selected_columns,
-            "num_rows": num_rows,
-            "x_axis": x_axis,
-            "y_axis": y_axis,
-            "z_axis": z_axis,
-            "color_axis": color_axis,
-            "interactive_plot": interactive_plot,
-        }
-        st.session_state.steps.append(step)
-
-    # Create a tab layout for different visualizations
-    tab1, tab2, tab3 = st.tabs(["Interactive 3D Plot", "Heatmap", "Line Chart"])
-
-    with tab1:
-        st.subheader("Interactive 3D Plot")
-        if st.session_state.steps:
-            # Send a request to the backend with the collected steps
-            response = requests.post(
-                f"{API_URL}/plot_3d", json=st.session_state.steps[-1]
+            # Select number of rows
+            num_rows = st.number_input(
+                "Number of rows to load",
+                min_value=1,
+                value=max_rows // 100,
+                step=1,
+                max_value=max_rows,
             )
-            if interactive_plot:
-                raw_res = json.loads(response.json())
-                fig = go.Figure(data=raw_res["data"], layout=raw_res["layout"])
-                st.plotly_chart(fig)
-            else:
-                st.image(response.content, use_column_width=True)
+
+        with col2:
+            # Axis and color settings
+            with st.expander("Axis and Color Settings"):
+                x_axis = st.selectbox("X-axis", selected_columns, index=0)
+                y_axis = st.selectbox("Y-axis", selected_columns, index=1)
+                z_axis = st.selectbox("Z-axis", selected_columns, index=2)
+                color_axis = st.selectbox("Color axis", selected_columns)
+                interactive_plot = st.checkbox("Interactive Plot", value=True)
+
+        with col3:
+            # Save preferences button
+            if st.button("Save preferences"):
+                step = {
+                    "parquet_file": parquet_file,
+                    "columns": selected_columns,
+                    "num_rows": num_rows,
+                    "x_axis": x_axis,
+                    "y_axis": y_axis,
+                    "z_axis": z_axis,
+                    "color_axis": color_axis,
+                    "interactive_plot": interactive_plot,
+                }
+                st.session_state.steps.append(step)
+
+        # Visualization tabs
+        tab1, tab2, tab3 = st.tabs(["Interactive 3D Plot", "Heatmap", "Line Chart"])
+
+        with tab1:
+            st.subheader("Interactive 3D Plot")
+            if st.session_state.steps:
+                last_step = st.session_state.steps[-1]
+                # Send a request to the backend with the collected steps
+                response = requests.post(f"{API_URL}/plot_3d", json=last_step)
+                if last_step["interactive_plot"]:
+                    raw_res = json.loads(response.json())
+                    fig = go.Figure(data=raw_res["data"], layout=raw_res["layout"])
+                    st.plotly_chart(fig)
+                else:
+                    st.image(response.content, use_column_width=True)
+
+        with tab2:
+            st.subheader("Heatmap")
+            # Heatmap visualization code
+
+        with tab3:
+            st.subheader("Line Chart")
+            # Line chart visualization code
+
+        # About/Help section
+        with st.expander("About", expanded=True):
+            st.write(
+                """
+                - Data: [EEG Dataset Source](https://example.com/eeg-dataset)
+                - This app allows you to explore and visualize EEG data using various plots and charts.
+                - Select a patient, data type, and Parquet file to get started.
+                - Customize the visualization by selecting columns, axes, and color settings.
+                - Save your preferences to explore different visualizations.
+            """
+            )
 
 
+# Data loading functions (same as before)
 @st.cache_data
 def load_patients():
     response = requests.get(f"{API_URL}/patients")
@@ -130,7 +156,6 @@ def load_parquet_files(patient_dir, data_type):
     )
     parquet_file_paths = response.json()
 
-    # Get column names and row count for the first file
     if parquet_file_paths:
         response = requests.get(
             f"{API_URL}/column_names", params={"parquet_file": parquet_file_paths[0]}
