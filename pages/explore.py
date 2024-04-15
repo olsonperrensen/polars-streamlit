@@ -4,6 +4,7 @@ import requests
 import json
 import plotly.graph_objects as go
 
+
 # Set the API endpoint URL
 API_URL = "http://localhost:8000"
 
@@ -73,6 +74,7 @@ def app():
     y_axis = st.selectbox("Y-axis", selected_columns)
     z_axis = st.selectbox("Z-axis", selected_columns)
     color_axis = st.selectbox("Color axis", selected_columns)
+    interactive_plot = st.checkbox("Interactive Plot")
 
     # Check if all required fields are completed
     all_fields_completed = (
@@ -95,6 +97,7 @@ def app():
             "y_axis": y_axis,
             "z_axis": z_axis,
             "color_axis": color_axis,
+            "interactive_plot": interactive_plot,
         }
         st.session_state.steps.append(step)
 
@@ -108,7 +111,12 @@ def app():
             response = requests.post(
                 f"{API_URL}/plot_3d", json=st.session_state.steps[-1]
             )
-            st.image(response.content, use_column_width=True)
+            if interactive_plot:
+                raw_res = json.loads(response.json())
+                fig = go.Figure(data=raw_res["data"], layout=raw_res["layout"])
+                st.plotly_chart(fig)
+            else:
+                st.image(response.content, use_column_width=True)
 
     # with tab2:
     #     st.subheader("Heatmap")
