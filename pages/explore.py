@@ -1,21 +1,23 @@
 import streamlit as st
 import os
-import pandas as pd
+import polars as pl
 
 # Set the root directory
-root_dir = "data"
+root_dir = "data\\A\\B"
 
 # Get a list of all the patient directories
 patient_dirs = [d for d in os.listdir(root_dir) if d.startswith("(S")]
 
 
-# Define a function to get the CSV file paths
-def get_csv_file_paths(patient_dir, data_type):
+# Define a function to get the Parquet file paths
+def get_parquet_file_paths(patient_dir, data_type):
     dir_path = os.path.join(root_dir, patient_dir, data_type)
-    csv_files = [
-        os.path.join(dir_path, f) for f in os.listdir(dir_path) if f.endswith(".csv")
+    parquet_files = [
+        os.path.join(dir_path, f)
+        for f in os.listdir(dir_path)
+        if f.endswith(".parquet")
     ]
-    return csv_files
+    return parquet_files
 
 
 # Define the Streamlit app
@@ -30,14 +32,16 @@ def app():
         "Select data type", ["Preprocessed EEG Data", "Raw EEG Data"]
     )
 
-    # Get the CSV file paths for the selected patient and data type
-    csv_file_paths = get_csv_file_paths(patient_dir, data_type)
+    # Get the Parquet file paths for the selected patient and data type
+    parquet_file_paths = get_parquet_file_paths(
+        patient_dir, f"{data_type}\\.csv format"
+    )
 
-    # Allow the user to select a CSV file
-    csv_file = st.selectbox("Select a CSV file", csv_file_paths)
+    # Allow the user to select a Parquet file
+    parquet_file = st.selectbox("Select a Parquet file", parquet_file_paths)
 
-    # Load the dataframe
-    df = pd.read_csv(csv_file)
+    # Load the dataframe using Polars
+    df = pl.read_parquet(parquet_file)
 
     # Display the dataframe
     st.write(df)
