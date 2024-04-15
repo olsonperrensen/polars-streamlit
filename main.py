@@ -1,6 +1,6 @@
 # backend.py
 from typing import List
-from fastapi import FastAPI, HTTPException, Response
+from fastapi import FastAPI, HTTPException, Query, Response
 import os
 import polars as pl
 import plotly.express as px
@@ -48,9 +48,14 @@ def get_parquet_files(patient_dir: str, data_type: str):
 
 
 @app.get("/column_names")
-def get_column_names(parquet_file: str):
-    df = pl.scan_parquet(parquet_file)
-    return df.columns
+def get_column_names(parquet_file: str = Query(...)):
+    # Read the Parquet file using pandas
+    df = pl.read_parquet(parquet_file)
+
+    # Get the column names and total row count
+    column_names = list(df.columns)
+    row_count = df.shape[0]
+    return {"column_names": column_names, "row_count": row_count}
 
 
 @app.post("/plot_3d")
