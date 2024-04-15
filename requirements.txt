@@ -7,6 +7,3 @@ uvicorn[standard]
 pyjwt
 python-multipart
 pip
-dash
-kaleido
-ipython

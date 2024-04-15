@@ -1,5 +1,4 @@
 # backend.py
-from base64 import b64encode
 from typing import List
 from fastapi import FastAPI, HTTPException, Response
 import os
@@ -7,8 +6,6 @@ import polars as pl
 import plotly.express as px
 import altair as alt
 from pydantic import BaseModel
-from dash import html
-from IPython.display import Image
 
 
 app = FastAPI()
@@ -25,6 +22,7 @@ class PlotRequest(BaseModel):
     y_axis: str
     z_axis: str
     color_axis: str
+    interactive_plot: bool
 
 
 @app.get("/patients")
@@ -89,7 +87,11 @@ def plot_3d(request: PlotRequest):
     )
     img_bytes = fig.to_image(format="png", width=600, height=350, scale=2)
 
-    return Response(content=img_bytes, media_type="image/png")
+    if request.interactive_plot:
+        return fig.to_json()
+    else:
+        img_bytes = fig.to_image(format="png", width=600, height=350, scale=2)
+        return Response(content=img_bytes, media_type="image/png")
 
 
 @app.post("/heatmap")
