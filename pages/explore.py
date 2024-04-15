@@ -24,6 +24,7 @@ def app():
 
     # Sidebar
     with st.sidebar:
+        st.markdown("##")  # Add some vertical space
         st.title("🧠 EEG Data Explorer")
 
         # Select patient
@@ -32,7 +33,8 @@ def app():
         # Select data type
         data_type = st.selectbox("Select data type", load_data_types())
 
-        # Select color theme (optional)
+    # Right Sidebar
+    with st.sidebar.container():
         color_theme_list = [
             "blues",
             "cividis",
@@ -53,7 +55,7 @@ def app():
             patient_dir, data_type
         )
 
-        col1, col2, col3 = st.columns((2, 1, 1))
+        col1, col2 = st.columns((2, 2))
 
         with col1:
             # Select Parquet file
@@ -75,15 +77,14 @@ def app():
             )
 
         with col2:
-            # Axis and color settings
-            with st.expander("Axis and Color Settings"):
+            # Axis and color settings (with more space)
+            with st.expander("Axis and Color Settings", expanded=True):
                 x_axis = st.selectbox("X-axis", selected_columns, index=0)
                 y_axis = st.selectbox("Y-axis", selected_columns, index=1)
                 z_axis = st.selectbox("Z-axis", selected_columns, index=2)
                 color_axis = st.selectbox("Color axis", selected_columns)
                 interactive_plot = st.checkbox("Interactive Plot", value=True)
 
-        with col3:
             # Save preferences button
             if st.button("Save preferences"):
                 step = {
@@ -102,7 +103,6 @@ def app():
         tab1, tab2, tab3 = st.tabs(["Interactive 3D Plot", "Heatmap", "Line Chart"])
 
         with tab1:
-            st.subheader("Interactive 3D Plot")
             if st.session_state.steps:
                 last_step = st.session_state.steps[-1]
                 # Send a request to the backend with the collected steps
@@ -115,11 +115,11 @@ def app():
                     st.image(response.content, use_column_width=True)
 
         with tab2:
-            st.subheader("Heatmap")
+            pass
             # Heatmap visualization code
 
         with tab3:
-            st.subheader("Line Chart")
+            pass
             # Line chart visualization code
 
         # About/Help section
@@ -133,6 +133,12 @@ def app():
                 - Save your preferences to explore different visualizations.
             """
             )
+
+        if st.button("LLM"):
+            try:
+                st.switch_page("pages/llm.py")
+            except Exception as e:
+                print(e)
 
 
 # Data loading functions (same as before)

@@ -1,18 +1,22 @@
 import streamlit as st
-from st_pages import show_pages, Page
+from st_pages import show_pages, Page, hide_pages
 
-show_pages(
+hide_pages(
     [
         Page("streamlit_app.py", "Home", "🏠"),
         Page("pages/login.py", "Login", "🔐"),
-        Page("pages/explore.py", "Explore", "🔍"),
-        Page("pages/llm.py", "LLM", "🤖"),
         Page("pages/own_polars.py", "Own Polars", "🐻‍❄️"),
         Page("pages/process.py", "Process", "⚙️"),
         Page("pages/flowchart.py", "Flowchart", "📊"),
     ]
 )
 
+show_pages(
+    [
+        Page("pages/explore.py", "Explore", "🔍"),
+        Page("pages/llm.py", "LLM", "🤖"),
+    ]
+)
 
 st.subheader("| Intro")
 col1, col2 = st.columns(2, gap="small")
