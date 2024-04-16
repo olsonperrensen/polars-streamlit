@@ -7,9 +7,10 @@ import datetime
 import time
 from collections import deque
 import pytz
+import os
 
 # Set the API endpoint URL
-API_URL = "http://localhost:8000"
+API_URL = os.environ.get("AUTH_ENDPOINT_URL", "http://localhost:8000")
 
 # Set page configuration
 st.set_page_config(

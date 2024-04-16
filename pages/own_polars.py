@@ -1,13 +1,18 @@
 import streamlit as st
 import requests
 import json
+import os
 
-API_URL = "http://localhost:8000/own_polars"  # Replace with your API URL
+API_URL = os.environ.get(
+    "AUTH_ENDPOINT_URL", "http://localhost:8000"
+)  # Replace with your API URL
 
 
 def send_polars_code(polars_code):
     try:
-        response = requests.post(API_URL, json={"polars_code": polars_code}, timeout=10)
+        response = requests.post(
+            f"{API_URL}/own_polars", json={"polars_code": polars_code}, timeout=10
+        )
         response.raise_for_status()
         return response.json()["data"]
     except requests.exceptions.RequestException as e:
