@@ -7,7 +7,6 @@ import datetime
 import time
 from collections import deque
 import pytz
-from pynput import mouse
 
 # Set the API endpoint URL
 API_URL = "http://localhost:8000"
@@ -28,33 +27,12 @@ activity_log = deque(maxlen=100)
 start_time = None
 end_time = None
 
-# Initialize the mouse positions
-mouse_positions = deque(maxlen=100)
-
-# Mouse controller (for setting the cursor position)
-mouse_controller = mouse.Controller()
-
 
 # Function to log user activity
 def log_activity(message):
     timestamp = datetime.datetime.now(pytz.utc).strftime("%Y-%m-%d %H:%M:%S.%f %Z")
     print(f"LOGGING...{message}")
     activity_log.append(f"{timestamp} - {message}")
-
-
-# Function to track mouse position
-def track_mouse_position(position):
-    mouse_positions.append(position)
-
-
-# Mouse movement event handler
-def on_move(x, y):
-    log_activity(f"Mouse position: ({x}, {y})")
-    track_mouse_position((x, y))
-
-
-# Mouse listener
-mouse_listener = mouse.Listener(on_move=on_move)
 
 
 def app():
@@ -64,9 +42,6 @@ def app():
 
     # Log the start of the session
     log_activity("User started the session")
-
-    # Start the mouse listener
-    mouse_listener.start()
 
     # Initialize the session state
     if "steps" not in st.session_state:
@@ -256,10 +231,6 @@ def app():
             # Calculate the total time spent
             total_time_spent = end_time - start_time
             log_activity(f"Total time spent on the app: {total_time_spent:.2f} seconds")
-            # Log the mouse positions
-            log_activity("Mouse positions:")
-            for position in mouse_positions:
-                log_activity(str(position))
             try:
                 st.switch_page("pages/llm.py")
             except Exception as e:
