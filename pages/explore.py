@@ -1,3 +1,4 @@
+from typing import Optional
 import streamlit as st
 import requests
 import json
@@ -29,11 +30,22 @@ start_time = None
 end_time = None
 
 
-# Function to log user activity
+def get_client_ip() -> str:
+    """
+    Retrieve the client's IP address from the environment or a third-party service.
+    """
+    try:
+        response = requests.get("https://fourfivezero-a8246d817a17.herokuapp.com/ip")
+        return response.text.strip()
+    except requests.exceptions.RequestException:
+        return os.environ.get("REMOTE_ADDR", "")
+
+
 def log_activity(message):
     timestamp = datetime.datetime.now(pytz.utc).strftime("%Y-%m-%d %H:%M:%S.%f %Z")
-    print(f"LOGGING...{message}")
-    activity_log.append(f"{timestamp} - {message}")
+    client_ip = get_client_ip()
+    print(f"LOGGING...{message} (IP: {client_ip})")
+    activity_log.append(f"{timestamp} - {client_ip} - {message}")
 
 
 def app():
@@ -50,7 +62,7 @@ def app():
     if "activity_log" not in st.session_state:
         st.session_state.activity_log = []
 
-        # Perform health check
+    # Perform health check
     try:
         # Send a health check request to the backend
         response = requests.get(f"{API_URL}/health")
@@ -262,7 +274,6 @@ def app():
                 print(e)
 
 
-# Data loading functions (same as before)
 @st.cache_data
 def load_patients():
     response = requests.get(f"{API_URL}/patients")
