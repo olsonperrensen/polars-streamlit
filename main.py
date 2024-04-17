@@ -25,6 +25,11 @@ class PlotRequest(BaseModel):
     interactive_plot: bool
 
 
+@app.get("/health")
+def health_check():
+    return {"status": "OK"}
+
+
 @app.get("/patients")
 def get_patients():
     patient_dirs = [d for d in os.listdir(root_dir) if d.startswith("(S")]
