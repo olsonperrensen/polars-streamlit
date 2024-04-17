@@ -50,6 +50,30 @@ def app():
     if "activity_log" not in st.session_state:
         st.session_state.activity_log = []
 
+        # Perform health check
+    try:
+        # Send a health check request to the backend
+        response = requests.get(f"{API_URL}/health")
+        if response.status_code == 200:
+            s = st.success("Backend server is healthy and responsive.")
+            time.sleep(0.7)
+            s.empty()
+        else:
+            st.error(
+                "Oops, it looks like the backend server is not responding at the moment. "
+                "Please try again in a few minutes. If the issue persists, contact the system administrator."
+            )
+            st.write("Error details:")
+            st.markdown(f"{response.text}")
+            return
+    except requests.exceptions.RequestException as e:
+        st.error(
+            "Oops, it looks like the backend server is not responding at the moment. "
+            "Please try again in a few minutes. If the issue persists, contact the system administrator."
+        )
+        st.write(f"Error details: {str(e)}")
+        return
+
     # Sidebar
     with st.sidebar:
         st.markdown("##")  # Add some vertical space
