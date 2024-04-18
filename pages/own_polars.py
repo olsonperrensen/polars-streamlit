@@ -47,7 +47,8 @@ def main():
     execute_button = st.button("Execute", disabled=not is_valid_input)
 
     if execute_button and is_valid_input:
-        with st.expander("Confirm Execution"):
+        msg = "Processing your request..."
+        with st.expander(msg, expanded=True):
             st.code(python_code, language="python")
             response = send_python_code(python_code)
             if isinstance(response, str):
@@ -59,7 +60,8 @@ def main():
 
                 if output:
                     st.subheader("Output")
-                    st.text(output)
+                    output = json.loads(output)
+                    st.data_editor(output)
 
                 if result is not None:
                     st.subheader("Result")
