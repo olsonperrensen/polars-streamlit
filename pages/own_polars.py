@@ -9,6 +9,7 @@ import re
 API_URL = os.environ.get("AUTH_ENDPOINT_URL", "http://localhost:8000")
 
 
+# SOON TO BE DEPRECATED
 def format_python_code(python_code):
     # Remove multi-line comments (''' or """)
     code = re.sub(r"'''.*?'''", "", python_code, flags=re.DOTALL)
@@ -17,8 +18,8 @@ def format_python_code(python_code):
     # Remove single-line comments (#)
     code = re.sub(r"#.*", "", code)
 
-    # Replace double quotes with single quotes and newlines with semicolons
-    code = code.replace('"', "'").replace("\n", ";")
+    # Replace double quotes with triple quotes and newlines with semicolons
+    code = code.replace('"', '"""').replace("\n", ";")
 
     # Remove extra whitespace around semicolons
     code = re.sub(r";\s*", ";", code)
@@ -31,6 +32,12 @@ def format_python_code(python_code):
 
     # Remove semicolons at the end of import statements
     code = re.sub(r"(import\s+[^;]+);", r"\1\n", code)
+
+    # Remove semicolons at the end of each key-value pair in a dictionary
+    code = re.sub(r"([\'\"]?[\w\s]+[\'\"]?\s*:\s*[^;{]+);", r"\1", code)
+
+    # Remove semicolons before the start of the key of a dictionary
+    code = re.sub(r"{\s*;", "{", code)
 
     return code
 
