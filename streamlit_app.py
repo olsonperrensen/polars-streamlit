@@ -5,16 +5,16 @@ hide_pages(
     [
         Page("streamlit_app.py", "Home", "🏠"),
         Page("pages/login.py", "Login", "🔐"),
-        Page("pages/own_polars.py", "Own Polars", "🐻‍❄️"),
         Page("pages/process.py", "Process", "⚙️"),
         Page("pages/flowchart.py", "Flowchart", "📊"),
+        Page("pages/llm.py", "LLM", "🤖"),
     ]
 )
 
 show_pages(
     [
         Page("pages/explore.py", "Explore", "🔍"),
-        Page("pages/llm.py", "LLM", "🤖"),
+        Page("pages/own_polars.py", "Own Polars", "🐻‍❄️"),
     ]
 )
 
