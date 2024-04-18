@@ -10,8 +10,28 @@ API_URL = os.environ.get("AUTH_ENDPOINT_URL", "http://localhost:8000")
 
 
 def format_python_code(python_code):
-    code = python_code.replace('"', "'")
+    # Remove multi-line comments (''' or """)
+    code = re.sub(r"'''.*?'''", "", python_code, flags=re.DOTALL)
+    code = re.sub(r'""".*?"""', "", code, flags=re.DOTALL)
+
+    # Remove single-line comments (#)
+    code = re.sub(r"#.*", "", code)
+
+    # Replace double quotes with single quotes and newlines with semicolons
+    code = code.replace('"', "'").replace("\n", ";")
+
+    # Remove extra whitespace around semicolons
+    code = re.sub(r";\s*", ";", code)
+
+    # Remove consecutive semicolons
     code = re.sub(r";+", ";", code)
+
+    # Replace colon followed by semicolon with colon followed by space
+    code = re.sub(r":\s*;", ": ", code)
+
+    # Remove semicolons at the end of import statements
+    code = re.sub(r"(import\s+[^;]+);", r"\1\n", code)
+
     return code
 
 
