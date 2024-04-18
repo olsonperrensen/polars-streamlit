@@ -12,3 +12,4 @@ icecream
 aiohttp
 selenium
 tqdm
+streamlit-modal

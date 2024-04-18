@@ -3,22 +3,16 @@ import requests
 import json
 import os
 
-API_URL = os.environ.get(
-    "AUTH_ENDPOINT_URL", "http://localhost:8000"
-)  # Replace with your API URL
+API_URL = os.environ.get("AUTH_ENDPOINT_URL", "http://localhost:8000")
 
 
 def format_polars_code(polars_code):
-    # Replace triple quotes with semicolons and remove newlines and carriage returns
-    polars_code = (
+    return (
         polars_code.replace('"', '"')
         .replace("'''", ";")
         .replace("\n", "")
         .replace("\r", "")
     )
-    # Split the code by newlines and join with semicolons
-    lines = [line.strip() for line in polars_code.split("\n")]
-    return ";".join(lines)
 
 
 def send_polars_code(polars_code, operation_type):
@@ -32,41 +26,30 @@ def send_polars_code(polars_code, operation_type):
         response.raise_for_status()
         return response.json()["data"]
     except requests.exceptions.RequestException as e:
-        st.error(f"Error: {str(e)}")
-        return None
+        return str(e)
 
 
 def main():
+    st.set_page_config(page_title="Polars Code Execution")
     st.title("Polars Code Execution")
 
-    # Polars code input
     polars_code = st.text_area("Enter Polars Code", height=200, max_chars=9000)
-    polars_code = st.code(polars_code, language="python")
-    print(polars_code.text)
-    # Operation type selection
     operation_type = st.selectbox(
-        "Select operation type", ["New DataFrame", "In-place"]
+        "Select operation type", ["New DataFrame", "In-place", "Undo"]
     )
 
-    # Flag to track whether a result has been displayed
-    result_displayed = False
+    is_valid_input = polars_code.strip() and operation_type
+    execute_button = st.button("Execute", disabled=not is_valid_input)
 
-    if st.button("Execute"):
-        st.write(f"1: {polars_code}")
-        if polars_code.strip():
+    if execute_button and is_valid_input:
+        with st.expander("Confirm Execution"):
+            st.code(polars_code, language="python")
             result = send_polars_code(polars_code, operation_type)
-            if result is not None:
+            if isinstance(result, str):
+                st.error(f"Error: {result}")
+            else:
                 st.success("Execution Successful")
                 st.json(json.loads(result))
-                result_displayed = True
-        else:
-            st.warning("Please enter Polars code.")
-
-    # Display the "Undo" option only if a result has been displayed
-    if result_displayed:
-        operation_type = st.selectbox(
-            "Select operation type", ["New DataFrame", "In-place", "Undo"]
-        )
 
 
 if __name__ == "__main__":
