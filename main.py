@@ -7,9 +7,9 @@ import polars as pl
 import plotly.express as px
 import altair as alt
 from pydantic import BaseModel
-import json
 import sys
 from io import StringIO
+import io
 
 
 app = FastAPI()
@@ -30,8 +30,7 @@ class PlotRequest(BaseModel):
 
 
 class CodeBody(BaseModel):
-    polars_code: str
-    operation_type: str
+    python_code: str
 
 
 @app.get("/health")
@@ -149,15 +148,17 @@ def redirect_stdout():
         sys.stdout = old_target
 
 
-@app.post("/own_polars")
-def execute_polars_code(code_body: CodeBody):
-    print("REACHED ENDPOINT")
-    try:
-        with redirect_stdout():
-            # Split the code by semicolons to handle multiple statements
-            for statement in code_body.polars_code.split(";"):
-                exec(statement.strip())
-            result = sys.stdout.getvalue()
-            return {"data": json.dumps(result)}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+@app.post("/execute_python")
+def execute_python_code(code_body: CodeBody):
+    import pandas as pd
+
+    s = pd.DataFrame({"A": [1, 2, 3], "B": [4, 5, 6], "C": [7, 8, 9]})
+    print(s.to_json())
+    user_namespace = {}
+    sys.stdout = stdout_buffer = StringIO()
+    exec(code_body.python_code, user_namespace)
+    sys.stdout = sys.__stdout__
+    return {
+        "output": stdout_buffer.getvalue(),
+        "result": user_namespace.get("result", None),
+    }
