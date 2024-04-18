@@ -3,22 +3,22 @@ import requests
 import json
 import os
 import pandas as pd
+import re
+
 
 API_URL = os.environ.get("AUTH_ENDPOINT_URL", "http://localhost:8000")
 
 
 def format_python_code(python_code):
-    return (
-        python_code.replace('"', '"')
-        .replace("'''", ";")
-        .replace("\n", "")
-        .replace("\r", "")
-    )
+    code = python_code.replace('"', "'")
+    code = re.sub(r";+", ";", code)
+    return code
 
 
 def send_python_code(python_code):
     try:
         formatted_code = format_python_code(python_code)
+        st.info(formatted_code)
         response = requests.post(
             f"{API_URL}/execute_python",
             json={"python_code": formatted_code},
