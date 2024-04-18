@@ -29,6 +29,11 @@ class PlotRequest(BaseModel):
     interactive_plot: bool
 
 
+class CodeBody(BaseModel):
+    polars_code: str
+    operation_type: str
+
+
 @app.get("/health")
 def health_check():
     return {"status": "OK"}
@@ -145,12 +150,12 @@ def redirect_stdout():
 
 
 @app.post("/own_polars")
-def execute_polars_code(polars_code: str, operation_type: str):
-    print(polars_code)
+def execute_polars_code(code_body: CodeBody):
+    print("REACHED ENDPOINT")
     try:
         with redirect_stdout():
             # Split the code by semicolons to handle multiple statements
-            for statement in polars_code.split(";"):
+            for statement in code_body.polars_code.split(";"):
                 exec(statement.strip())
             result = sys.stdout.getvalue()
             return {"data": json.dumps(result)}
