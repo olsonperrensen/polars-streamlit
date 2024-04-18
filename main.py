@@ -1,4 +1,5 @@
 # backend.py
+import contextlib
 from typing import List
 from fastapi import FastAPI, HTTPException, Query, Response
 import os
@@ -6,6 +7,9 @@ import polars as pl
 import plotly.express as px
 import altair as alt
 from pydantic import BaseModel
+import json
+import sys
+from io import StringIO
 
 
 app = FastAPI()
@@ -128,3 +132,27 @@ def line_chart(request: PlotRequest):
         .properties(width=600, height=400)
     )
     return chart.to_json()
+
+
+@contextlib.contextmanager
+def redirect_stdout():
+    new_target = StringIO()
+    old_target, sys.stdout = sys.stdout, new_target
+    try:
+        yield new_target
+    finally:
+        sys.stdout = old_target
+
+
+@app.post("/own_polars")
+def execute_polars_code(polars_code: str, operation_type: str):
+    print(polars_code)
+    try:
+        with redirect_stdout():
+            # Split the code by semicolons to handle multiple statements
+            for statement in polars_code.split(";"):
+                exec(statement.strip())
+            result = sys.stdout.getvalue()
+            return {"data": json.dumps(result)}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
