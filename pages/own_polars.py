@@ -71,27 +71,53 @@ def main():
     st.set_page_config(page_title="Real-Time Code Creation")
     st.title("Real-Time Code Creation")
 
-    # Select libraries/frameworks/packages
-    libraries = [
-        "pandas",
-        "numpy",
-        "scikit-learn",
-        "matplotlib",
-        "seaborn",
-        "tensorflow",
-        "pytorch",
-    ]
-    selected_libraries = st.multiselect(
-        "Select libraries/frameworks/packages:", libraries
-    )
+    col1, col2 = st.columns(2)
 
-    if selected_libraries:
-        st.subheader("Selected Libraries")
-        library_imports = "\n".join(
-            [f"import {library}" for library in selected_libraries]
+    with col1:
+        # Select libraries/frameworks/packages
+        libraries = [
+            "pandas",
+            "numpy",
+            "scikit-learn",
+            "matplotlib",
+            "seaborn",
+            "tensorflow",
+            "pytorch",
+        ]
+        selected_libraries = st.multiselect(
+            "Select libraries/frameworks/packages:", libraries
         )
-        st.code(library_imports, language="python")
 
+    with col2:
+        # Upload requirements.txt file
+        uploaded_file = st.file_uploader("Upload requirements.txt file", type="txt")
+
+    if uploaded_file is not None:
+        # Read the contents of the uploaded file
+        file_contents = uploaded_file.read().decode("utf-8")
+
+        # Split the file contents into lines and extract the library names
+        file_libraries = [
+            line.strip().split("==")[0]
+            for line in file_contents.split("\n")
+            if line.strip()
+        ]
+
+        # Merge the selected libraries with the libraries from the file
+        merged_libraries = list(set(selected_libraries + file_libraries))
+
+        with st.expander("Selected Libraries"):
+            library_imports = "\n".join(
+                [f"import {library}" for library in merged_libraries]
+            )
+            st.code(library_imports, language="python")
+    else:
+        if selected_libraries:
+            with st.expander("Selected Libraries"):
+                library_imports = "\n".join(
+                    [f"import {library}" for library in selected_libraries]
+                )
+                st.code(library_imports, language="python")
     # Select data exploration actions
     actions = [
         "Data Loading",
