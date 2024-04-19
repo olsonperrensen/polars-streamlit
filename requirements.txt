@@ -13,3 +13,4 @@ aiohttp
 selenium
 tqdm
 streamlit-modal
+ruff

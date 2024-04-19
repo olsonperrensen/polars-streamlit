@@ -11,12 +11,16 @@ import subprocess
 API_URL = os.environ.get("AUTH_ENDPOINT_URL", "http://localhost:8000")
 
 
-def send_python_code(python_code):
+def send_python_code(python_code, selected_libraries):
     try:
         # Save the Python code to a temporary file
         with tempfile.NamedTemporaryFile(
             mode="w", delete=False, suffix=".py"
         ) as temp_file:
+            # Add import statements for selected libraries
+            for library in selected_libraries:
+                temp_file.write(f"import {library}\n")
+            temp_file.write("\n")
             temp_file.write(python_code)
             temp_file_path = temp_file.name
 
@@ -28,7 +32,7 @@ def send_python_code(python_code):
             formatted_code = file.read()
 
         # Delete the temporary file
-        # os.unlink(temp_file_path)
+        os.unlink(temp_file_path)
 
         st.info(formatted_code)
         response = requests.post(
@@ -47,67 +51,75 @@ def send_python_code(python_code):
 
 
 def main():
-    st.set_page_config(page_title="Python Code Execution")
-    st.title("Python Code Execution")
+    st.set_page_config(page_title="Python Data Science Workbench")
+    st.title("Python Data Science Workbench")
 
-    demo_codes = [
-        "import pandas as pd; df = pd.DataFrame({'A': [1, 2, 3], 'B': [4, 5, 6], 'C': [7, 8, 9]}); df = df.to_json(); print(df)",
-        'import pandas as pd\n\nimport matplotlib.pyplot as plt\n\ndef explore_data(data):\n\n"""\nPerforms basic data exploration on a given pandas DataFrame.\n\nArgs:\n    data (pandas.DataFrame): The DataFrame to be explored.\n\nReturns:\n    None\n"""\n\nprint("Shape of the DataFrame:")\nprint(data.shape)\n\nprint("\\nData Types:")\nprint(data.dtypes)\n\nprint("\\nHead of the DataFrame:")\nprint(data.head())\n\nprint("\\nDescription of the DataFrame:")\nprint(data.describe())\n\nprint("\\nMissing Values:")\nprint(data.isnull().sum())\n\ndef plot_data(data):\n\n"""\nPlots basic visualizations for a given pandas DataFrame.\n\nArgs:\n    data (pandas.DataFrame): The DataFrame to be plotted.\n\nReturns:\n    None\n"""\n\nprint("\\nScatterplot of first two columns:")\ndata.plot(kind=\'scatter\', x=data.columns[0], y=data.columns[1])\nplt.show()\n\nprint("\\nHistogram of first column:")\ndata[data.columns[0]].hist()\nplt.show()\n\nprint("\\nBarplot of first categorical column:")\ndata[data.columns[1]].value_counts().plot(kind=\'bar\')\nplt.show()\n\n# Generate dummy data\ndata = pd.DataFrame({\n    \'A\': [1, 2, 3, 4, 5],\n    \'B\': [\'a\', \'b\', \'c\', \'d\', \'e\'],\n    \'C\': [10.0, 20.0, 30.0, 40.0, 50.0],\n    \'D\': [True, False, True, False, True]\n})\n\n# Explore the data\nexplore_data(data)\n\n# Plot the data\nplot_data(data)',
-        "import pandas as pd\n\ndf = pd.read_csv('data.csv')\nprint(df.head())\nprint(df.describe())",
-        "import numpy as np\n\nx = np.random.rand(10)\nprint(x)\nprint(np.mean(x))",
-        "import matplotlib.pyplot as plt\n\nx = [1, 2, 3, 4, 5]\ny = [2, 4, 6, 8, 10]\n\nplt.plot(x, y)\nplt.xlabel('X')\nplt.ylabel('Y')\nplt.title('Line Plot')\nplt.show()",
+    # Select libraries/frameworks/packages
+    libraries = [
+        "pandas",
+        "numpy",
+        "scikit-learn",
+        "matplotlib",
+        "seaborn",
+        "tensorflow",
+        "pytorch",
     ]
+    selected_libraries = st.multiselect(
+        "Select libraries/frameworks/packages:", libraries
+    )
 
-    option = st.selectbox("Choose an option", ["Demo Code", "DIY Code"])
+    # Select data exploration actions
+    actions = [
+        "Data Loading",
+        "Data Cleaning",
+        "Feature Engineering",
+        "Data Visualization",
+        "Model Training",
+    ]
+    selected_actions = st.multiselect("Select data exploration actions:", actions)
 
-    if option == "Demo Code":
-        random_index = random.randint(0, len(demo_codes) - 1)
-        python_code = demo_codes[random_index]
-        st.code(python_code, language="python")
-        if st.button("Execute Demo Code"):
-            response = send_python_code(python_code)
-            if isinstance(response, str):
-                st.error(f"Error: {response}")
-            else:
-                st.success("Execution Successful")
-                output = response.get("output", "")
-                result = response.get("result", None)
+    # Continuous workflow
+    if "history" not in st.session_state:
+        st.session_state.history = []
 
-                if output:
-                    st.subheader("Output")
-                    output = json.loads(output)
-                    st.data_editor(output)
+    if st.session_state.history:
+        st.subheader("Workflow History")
+        for idx, (code, df_name) in enumerate(st.session_state.history, start=1):
+            with st.expander(f"Step {idx}"):
+                st.code(code, language="python")
+                if df_name:
+                    st.write(f"DataFrame: {df_name}")
 
-                if result is not None:
-                    st.subheader("Result")
-                    if isinstance(result, pd.DataFrame):
-                        st.dataframe(result)
-                    else:
-                        st.write(result)
+        if st.button("Clear History"):
+            st.session_state.history = []
 
-    elif option == "DIY Code":
-        python_code = st.text_area("Enter Python Code", height=200, max_chars=9000)
-        is_valid_input = python_code.strip()
-        if st.button("Execute DIY Code", disabled=not is_valid_input):
-            response = send_python_code(python_code)
-            if isinstance(response, str):
-                st.error(f"Error: {response}")
-            else:
-                st.success("Execution Successful")
-                output = response.get("output", "")
-                result = response.get("result", None)
+    # Code editor
+    st.subheader("Code Editor")
+    python_code = st.text_area("Enter Python Code", height=300)
 
-                if output:
-                    st.subheader("Output")
-                    output = json.loads(output)
-                    st.data_editor(output)
+    if st.button("Run Code"):
+        response = send_python_code(python_code, selected_libraries)
+        if isinstance(response, str):
+            st.error(f"Error: {response}")
+        else:
+            st.success("Execution Successful")
+            output = response.get("output", "")
+            result = response.get("result", None)
 
-                if result is not None:
-                    st.subheader("Result")
-                    if isinstance(result, pd.DataFrame):
-                        st.dataframe(result)
-                    else:
-                        st.write(result)
+            if output:
+                st.subheader("Output")
+                output = json.loads(output)
+                st.data_editor(output)
+
+            if result is not None:
+                st.subheader("Result")
+                if isinstance(result, pd.DataFrame):
+                    st.dataframe(result)
+                    df_name = st.text_input("Enter a name for the DataFrame:")
+                    if df_name:
+                        st.session_state.history.append((python_code, df_name))
+                else:
+                    st.write(result)
 
 
 if __name__ == "__main__":
