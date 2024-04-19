@@ -10,3 +10,5 @@ pip
 requests
 certifi
 tqdm
+matplotlib
+ruff

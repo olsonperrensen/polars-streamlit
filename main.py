@@ -1,7 +1,7 @@
 # backend.py
 import contextlib
 from typing import List
-from fastapi import FastAPI, HTTPException, Query, Response
+from fastapi import FastAPI, HTTPException, Query, Response, BackgroundTasks
 import os
 import polars as pl
 import plotly.express as px
@@ -9,7 +9,7 @@ import altair as alt
 from pydantic import BaseModel
 import sys
 from io import StringIO
-import io
+from script.script import dl_script
 
 
 app = FastAPI()
@@ -36,6 +36,20 @@ class CodeBody(BaseModel):
 @app.get("/health")
 def health_check():
     return {"status": "OK"}
+
+
+class Dataset(BaseModel):
+    url: str
+    save_path: str
+    extract_dir: str
+
+
+@app.post("/process_dataset")
+async def process_dataset(dataset: Dataset, background_tasks: BackgroundTasks):
+    background_tasks.add_task(
+        dl_script, dataset.url, dataset.save_path, dataset.extract_dir
+    )
+    return {"message": "Dataset processing started in the background."}
 
 
 @app.get("/patients")
@@ -150,10 +164,6 @@ def redirect_stdout():
 
 @app.post("/execute_python")
 def execute_python_code(code_body: CodeBody):
-    import pandas as pd
-
-    s = pd.DataFrame({"A": [1, 2, 3], "B": [4, 5, 6], "C": [7, 8, 9]})
-    print(s.to_json())
     user_namespace = {}
     sys.stdout = stdout_buffer = StringIO()
     exec(code_body.python_code, user_namespace)

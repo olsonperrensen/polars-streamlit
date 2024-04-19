@@ -215,7 +215,7 @@ def convert_to_parquet():
     delete_csv_files(input_folder)
 
 
-async def main(url: str, save_path: str, extract_dir: str):
+async def dl_script(url: str, save_path: str, extract_dir: str):
     try:
         # Check if the ZIP file is already downloaded in the "data/" subdirectory
         data_dir = os.path.join(os.getcwd(), "data")
@@ -246,4 +246,4 @@ if __name__ == "__main__":
     save_path = "file.zip"
     extract_dir = os.path.join(os.getcwd(), "data")
 
-    asyncio.run(main(url, save_path, extract_dir))
+    asyncio.run(dl_script(url, save_path, extract_dir))
