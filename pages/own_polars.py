@@ -11,6 +11,23 @@ import subprocess
 API_URL = os.environ.get("AUTH_ENDPOINT_URL", "http://localhost:8000")
 
 
+def get_action_code(action):
+    if action == "Data Loading":
+        return "# Data Loading\ndf = pd.read_csv('data.csv')"
+    elif action == "Data Cleaning":
+        return "# Data Cleaning\ndf = df.dropna()\ndf = df.drop_duplicates()"
+    elif action == "Feature Engineering":
+        return (
+            "# Feature Engineering\ndf['new_feature'] = df['column1'] + df['column2']"
+        )
+    elif action == "Data Visualization":
+        return "# Data Visualization\nimport matplotlib.pyplot as plt\nplt.plot(df['column1'], df['column2'])\nplt.xlabel('Column 1')\nplt.ylabel('Column 2')\nplt.title('Scatter Plot')\nplt.show()"
+    elif action == "Model Training":
+        return "# Model Training\nfrom sklearn.model_selection import train_test_split\nfrom sklearn.linear_model import LinearRegression\n\nX = df[['feature1', 'feature2']]\ny = df['target']\n\nX_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2)\n\nmodel = LinearRegression()\nmodel.fit(X_train, y_train)\n\nprint('Model coefficients:', model.coef_)\nprint('Model intercept:', model.intercept_)"
+    else:
+        return ""
+
+
 def send_python_code(python_code, selected_libraries):
     try:
         # Save the Python code to a temporary file
@@ -51,8 +68,8 @@ def send_python_code(python_code, selected_libraries):
 
 
 def main():
-    st.set_page_config(page_title="Python Data Science Workbench")
-    st.title("Python Data Science Workbench")
+    st.set_page_config(page_title="Real-Time Code Creation")
+    st.title("Real-Time Code Creation")
 
     # Select libraries/frameworks/packages
     libraries = [
@@ -68,6 +85,13 @@ def main():
         "Select libraries/frameworks/packages:", libraries
     )
 
+    if selected_libraries:
+        st.subheader("Selected Libraries")
+        library_imports = "\n".join(
+            [f"import {library}" for library in selected_libraries]
+        )
+        st.code(library_imports, language="python")
+
     # Select data exploration actions
     actions = [
         "Data Loading",
@@ -77,6 +101,47 @@ def main():
         "Model Training",
     ]
     selected_actions = st.multiselect("Select data exploration actions:", actions)
+
+    if selected_actions:
+        st.subheader("Selected Actions")
+        for action in selected_actions:
+            action_code = get_action_code(action)
+            st.code(action_code, language="python")
+            # Python code input
+            python_code = st.text_area("Additional Python code:", height=200)
+
+            if st.button("Execute"):
+                # if python_code.strip():
+                #     result = send_python_code(python_code, selected_libraries)
+                #     st.subheader("Execution Result")
+                #     if isinstance(result, dict):
+                #         st.json(result)
+                #     else:
+                #         st.text(result)
+                # else:
+                #     st.warning("Please enter some Python code.")
+                response = send_python_code(python_code, selected_libraries)
+                if isinstance(response, str):
+                    st.error(f"Error: {response}")
+                else:
+                    st.success("Execution Successful")
+                    output = response.get("output", "")
+                    result = response.get("result", None)
+
+                    if output:
+                        st.subheader("Output")
+                        output = json.loads(output)
+                        st.data_editor(output)
+
+                    if result is not None:
+                        st.subheader("Result")
+                        if isinstance(result, pd.DataFrame):
+                            st.dataframe(result)
+                            df_name = st.text_input("Enter a name for the DataFrame:")
+                            if df_name:
+                                st.session_state.history.append((python_code, df_name))
+                        else:
+                            st.write(result)
 
     # Continuous workflow
     if "history" not in st.session_state:
@@ -92,34 +157,6 @@ def main():
 
         if st.button("Clear History"):
             st.session_state.history = []
-
-    # Code editor
-    st.subheader("Code Editor")
-    python_code = st.text_area("Enter Python Code", height=300)
-
-    if st.button("Run Code"):
-        response = send_python_code(python_code, selected_libraries)
-        if isinstance(response, str):
-            st.error(f"Error: {response}")
-        else:
-            st.success("Execution Successful")
-            output = response.get("output", "")
-            result = response.get("result", None)
-
-            if output:
-                st.subheader("Output")
-                output = json.loads(output)
-                st.data_editor(output)
-
-            if result is not None:
-                st.subheader("Result")
-                if isinstance(result, pd.DataFrame):
-                    st.dataframe(result)
-                    df_name = st.text_input("Enter a name for the DataFrame:")
-                    if df_name:
-                        st.session_state.history.append((python_code, df_name))
-                else:
-                    st.write(result)
 
 
 if __name__ == "__main__":
