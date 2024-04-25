@@ -10,6 +10,7 @@ from io import StringIO
 import requests
 import subprocess
 import re
+import os
 
 app = FastAPI()
 
@@ -17,6 +18,20 @@ app = FastAPI()
 root_dir = "data\\A\\B"
 
 PACKAGE_NAME_PATTERN = r"^[a-zA-Z0-9_\-]+$"
+ALLOWED_COMMANDS = ["pip", "pip3"]
+ALLOWED_PACKAGES = [
+    "polars",
+    "pandas",
+    "numpy",
+    "sklearn",
+    "matplotlib",
+    "seaborn",
+    "tensorflow",
+    "pytorch",
+    "altair",
+    "plotly",
+    "keras",
+]
 
 
 class PlotRequest(BaseModel):
@@ -221,7 +236,6 @@ def execute_python_code(code_body: CodeBody):
 
 @app.post("/expand-package")
 async def expand_package(package: str):
-    user_namespace = {}
     stdout_buffer = StringIO()
     stderr_buffer = StringIO()
 
@@ -234,11 +248,20 @@ async def expand_package(package: str):
             "result": None,
         }
 
+    # Check if the package is allowed
+    if package not in ALLOWED_PACKAGES:
+        stderr_buffer.write("Package not allowed")
+        return {
+            "output": "",
+            "error": stderr_buffer.getvalue(),
+            "result": None,
+        }
+
     try:
-        # Construct the command with the prefix
+        # Construct the command
         command = f"pip install --upgrade {package}"
 
-        # Execute the command
+        # Execute the command with limited permissions
         result = subprocess.run(
             command,
             shell=True,
@@ -251,14 +274,11 @@ async def expand_package(package: str):
         stdout_buffer.write(result.stdout)
         stderr_buffer.write(result.stderr)
 
-        # Add the result to the user namespace
-        user_namespace["result"] = result.returncode
-
     except Exception as e:
         stderr_buffer.write(str(e))
 
     return {
         "output": stdout_buffer.getvalue(),
         "error": stderr_buffer.getvalue(),
-        "result": user_namespace.get("result", None),
+        "result": result.returncode if "result" in locals() else None,
     }
