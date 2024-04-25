@@ -85,12 +85,31 @@ def get_data_types():
 
 
 @app.get("/parquet_files")
-def get_parquet_files(patient_dir: str, data_type: str):
+def get_parquet_files(patient_id: str, data_type: str):
     r = requests.get(
         "https://datasets-server.huggingface.co/parquet?dataset=NOttheol/EEG-Talha-Alakus-Gonen-Turkoglu"
     )
     j = r.json()
-    urls = [f["url"] for f in j["parquet_files"] if f["split"] == "train"]
+
+    # Get all parquet files from the response
+    all_files = j["parquet_files"]
+
+    # Calculate the start and end indices for the patient's files
+    patient_num = int(patient_id)
+    start_index = patient_num * 5
+    end_index = start_index + 5
+
+    # Filter the files based on the patient's indices and split
+    patient_files = [
+        f
+        for f in all_files
+        if start_index <= int(f["filename"].split(".")[0]) < end_index
+        and f["split"] == "train"
+    ]
+
+    # Extract the URLs of the patient's files
+    urls = [f["url"] for f in patient_files]
+
     return urls
 
 
