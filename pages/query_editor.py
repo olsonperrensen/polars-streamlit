@@ -132,7 +132,9 @@ def main():
             "kaleido",
         ]
         selected_libraries = st.multiselect(
-            "Select libraries/frameworks/packages:", libraries
+            "Select libraries/frameworks/packages:",
+            libraries,
+            default=["pandas", "polars", "numpy"],
         )
 
     with col2:
