@@ -206,12 +206,12 @@ def app():
                     fig = go.Figure(data=raw_res["data"], layout=raw_res["layout"])
                     st.plotly_chart(fig)
                     log_activity(
-                        f"Displayed interactive 3D plot for {last_step['parquet_file']}"
+                        f"Displayed interactive 3D plot for {last_step['parquet_url']}"
                     )
                 else:
                     st.image(response.content, use_column_width=True)
                     log_activity(
-                        f"Displayed static 3D plot for {last_step['parquet_file']}"
+                        f"Displayed static 3D plot for {last_step['parquet_url']}"
                     )
 
         with tab2:
