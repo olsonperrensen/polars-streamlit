@@ -1,13 +1,12 @@
 import contextlib
 from typing import List
-from fastapi import FastAPI, HTTPException, Query, Response, BackgroundTasks
+from fastapi import FastAPI, HTTPException, Query, Response
 import polars as pl
 import plotly.express as px
 import altair as alt
 from pydantic import BaseModel
 import sys
 from io import StringIO
-from script.script import dl_script
 from datasets import load_dataset
 import requests
 
@@ -49,14 +48,6 @@ class Dataset(BaseModel):
     url: str
     save_path: str
     extract_dir: str
-
-
-@app.post("/process_dataset")
-async def process_dataset(dataset: Dataset, background_tasks: BackgroundTasks):
-    background_tasks.add_task(
-        dl_script, dataset.url, dataset.save_path, dataset.extract_dir
-    )
-    return {"message": "Dataset processing started in the background."}
 
 
 @app.get("/patients")

@@ -3,3 +3,4 @@ plotly
 polars
 fastapi
 uvicorn[standard]
+requests
