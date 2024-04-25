@@ -17,7 +17,6 @@ statsmodels
 patsy
 dask
 xarray
-vaex
 pandas-profiling
 category-encoders
 scikit-learn-extra
