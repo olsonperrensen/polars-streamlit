@@ -11,5 +11,4 @@ plotly
 requests
 pyarrow
 kaleido
-torch
 keras
