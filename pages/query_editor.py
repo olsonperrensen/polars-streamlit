@@ -28,15 +28,41 @@ def get_action_code(action):
         return ""
 
 
-def send_python_code(python_code, selected_libraries):
+def send_python_code(python_code, selected_libraries, selected_actions):
     try:
         # Save the Python code to a temporary file
         with tempfile.NamedTemporaryFile(
             mode="w", delete=False, suffix=".py"
         ) as temp_file:
             # Add import statements for selected libraries
-            for library in selected_libraries:
-                temp_file.write(f"import {library}\n")
+            if "pandas" in selected_libraries:
+                temp_file.write("import pandas as pd\n")
+            if "numpy" in selected_libraries:
+                temp_file.write("import numpy as np\n")
+            if "matplotlib" in selected_libraries:
+                temp_file.write("import matplotlib.pyplot as plt\n")
+            if "seaborn" in selected_libraries:
+                temp_file.write("import seaborn as sns\n")
+            if "sklearn" in selected_libraries:
+                temp_file.write("from sklearn import *\n")
+            if "tensorflow" in selected_libraries:
+                temp_file.write("import tensorflow as tf\n")
+            if "pytorch" in selected_libraries:
+                temp_file.write("import torch\n")
+            if "altair" in selected_libraries:
+                temp_file.write("import altair as alt\n")
+            if "plotly" in selected_libraries:
+                temp_file.write("import plotly.express as px\n")
+            if "keras" in selected_libraries:
+                temp_file.write("from keras import *\n")
+            temp_file.write("\n")
+
+            # Add pre-defined code for selected actions
+            for action in selected_actions:
+                action_code = get_action_code(action)
+                temp_file.write(action_code + "\n")
+
+            # Add the custom Python code
             temp_file.write("\n")
             temp_file.write(python_code)
             temp_file_path = temp_file.name
@@ -49,7 +75,7 @@ def send_python_code(python_code, selected_libraries):
             formatted_code = file.read()
 
         # Delete the temporary file
-        os.unlink(temp_file_path)
+        # os.unlink(temp_file_path)
 
         st.info(formatted_code)
         response = requests.post(
@@ -154,7 +180,9 @@ def main():
                 #         st.text(result)
                 # else:
                 #     st.warning("Please enter some Python code.")
-                response = send_python_code(python_code, selected_libraries)
+                response = send_python_code(
+                    python_code, selected_libraries, selected_actions
+                )
                 if isinstance(response, str):
                     st.error(f"Error: {response}")
                 else:
