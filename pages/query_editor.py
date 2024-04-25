@@ -80,13 +80,17 @@ def main():
     with col1:
         # Select libraries/frameworks/packages
         libraries = [
+            "polars",
             "pandas",
             "numpy",
-            "scikit-learn",
+            "sklearn",
             "matplotlib",
             "seaborn",
             "tensorflow",
             "pytorch",
+            "altair",
+            "plotly",
+            "keras",
         ]
         selected_libraries = st.multiselect(
             "Select libraries/frameworks/packages:", libraries
