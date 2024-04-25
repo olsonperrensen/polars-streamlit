@@ -16,7 +16,7 @@ root_dir = "data\\A\\B"
 
 
 class PlotRequest(BaseModel):
-    parquet_file: str
+    parquet_url: str
     columns: List[str]
     num_rows: int
     x_axis: str
@@ -107,7 +107,7 @@ def get_column_names(parquet_file: str = Query(...)):
 @app.post("/plot_3d")
 def plot_3d(request: PlotRequest):
     if (
-        not request.parquet_file
+        not request.parquet_url
         or not request.columns
         or not request.num_rows
         or not request.x_axis
@@ -117,9 +117,11 @@ def plot_3d(request: PlotRequest):
     ):
         raise HTTPException(status_code=400, detail="Missing required arguments")
 
+    # Read the downloaded Parquet file into a Polars DataFrame
     df = pl.read_parquet(
-        request.parquet_file, columns=request.columns, n_rows=request.num_rows
+        request.parquet_url, columns=request.columns, n_rows=request.num_rows
     )
+
     df_pd = df.to_pandas()
     fig = px.scatter_3d(
         df_pd,
@@ -136,7 +138,6 @@ def plot_3d(request: PlotRequest):
             zaxis_title=request.z_axis,
         )
     )
-    img_bytes = fig.to_image(format="png", width=600, height=350, scale=2)
 
     if request.interactive_plot:
         return fig.to_json()
