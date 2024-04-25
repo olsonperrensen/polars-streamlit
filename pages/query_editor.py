@@ -13,7 +13,7 @@ API_URL = os.environ.get("AUTH_ENDPOINT_URL", "http://localhost:8000")
 
 def get_action_code(action):
     if action == "Data Loading":
-        return "# Data Loading\ndf = pd.read_csv('data.csv')"
+        return "# Data Loading\ndf = pd.DataFrame(np.random.rand(1000, 100)); df = df.apply(lambda x: x**2 + np.sin(x) + np.log(x), axis=1)"
     elif action == "Data Cleaning":
         return "# Data Cleaning\ndf = df.dropna()\ndf = df.drop_duplicates()"
     elif action == "Feature Engineering":
@@ -76,12 +76,12 @@ def send_python_code(python_code, selected_libraries, selected_actions):
 
         # Delete the temporary file
         # os.unlink(temp_file_path)
-
-        st.info(formatted_code)
+        with st.expander("Black"):
+            st.code(formatted_code, language="python")
         response = requests.post(
             f"{API_URL}/execute_python",
             json={"python_code": formatted_code},
-            timeout=10,
+            timeout=120,
         )
         if response.status_code == 200:
             return response.json()
@@ -163,7 +163,6 @@ def main():
     selected_actions = st.multiselect("Select data exploration actions:", actions)
 
     if selected_actions:
-        st.subheader("Selected Actions")
         for action in selected_actions:
             action_code = get_action_code(action)
             st.code(action_code, language="python")
@@ -186,24 +185,30 @@ def main():
                 if isinstance(response, str):
                     st.error(f"Error: {response}")
                 else:
-                    st.success("Execution Successful")
-                    output = response.get("output", "")
-                    result = response.get("result", None)
+                    with st.expander("Result"):
+                        st.success("Execution Successful")
+                        res = response["remote_response"]
+                        output = res.get("output", "")
+                        result = res.get("result", None)
 
-                    if output:
-                        st.subheader("Output")
-                        output = json.loads(output)
-                        st.data_editor(output)
+                        if output:
+                            st.subheader("Output")
+                            output = json.loads(output)
+                            st.data_editor(output)
 
-                    if result is not None:
-                        st.subheader("Result")
-                        if isinstance(result, pd.DataFrame):
-                            st.dataframe(result)
-                            df_name = st.text_input("Enter a name for the DataFrame:")
-                            if df_name:
-                                st.session_state.history.append((python_code, df_name))
-                        else:
-                            st.write(result)
+                        if result is not None:
+                            st.subheader("Result")
+                            if isinstance(result, pd.DataFrame):
+                                st.dataframe(result)
+                                df_name = st.text_input(
+                                    "Enter a name for the DataFrame:"
+                                )
+                                if df_name:
+                                    st.session_state.history.append(
+                                        (python_code, df_name)
+                                    )
+                            else:
+                                st.write(result)
 
     # Continuous workflow
     if "history" not in st.session_state:
