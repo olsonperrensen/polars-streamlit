@@ -104,8 +104,8 @@ def get_column_names(parquet_file: str = Query(...)):
     return {"column_names": column_names, "row_count": row_count}
 
 
-@app.post("/plot_3d")
-def plot_3d(request: PlotRequest):
+@app.post("/3d_plot")
+def dried_plot(request: PlotRequest):
     if (
         not request.parquet_url
         or not request.columns
