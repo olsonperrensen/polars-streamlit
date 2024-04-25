@@ -10,6 +10,7 @@ from collections import deque
 import pytz
 import os
 import re
+from icecream import ic
 
 # Set the API endpoint URL
 API_URL = os.environ.get("AUTH_ENDPOINT_URL", "http://localhost:8000")
@@ -93,7 +94,7 @@ def app():
         st.title("🧠 EEG Data Explorer")
 
         # Select patient
-        patient_dir = st.selectbox("Select a patient", load_patients())
+        patient_id = st.selectbox("Select a patient", load_patients())
 
         # Select data type
         data_type = st.selectbox("Select data type", load_data_types())
@@ -113,8 +114,8 @@ def app():
         selected_color_theme = st.selectbox("Select a color theme", color_theme_list)
 
         # Log patient selection
-        if patient_dir:
-            log_activity(f"Selected patient: {patient_dir}")
+        if patient_id:
+            log_activity(f"Selected patient: {patient_id}")
 
         # Log data type selection
         if data_type:
@@ -140,9 +141,9 @@ def app():
                     log_file.write(entry + "\n")
 
     # Main content area
-    if patient_dir and data_type:
+    if patient_id and data_type:
         full_urls, displayed_urls, column_names, row_count = load_parquet_files(
-            patient_dir, data_type
+            patient_id, data_type
         )
 
         col1, col2 = st.columns((2, 2))
@@ -288,13 +289,14 @@ def load_data_types():
 
 
 @st.cache_data
-def load_parquet_files(patient_dir, data_type):
+def load_parquet_files(patient_id, data_type):
     response = requests.get(
         f"{API_URL}/parquet_files",
-        params={"patient_dir": patient_dir, "data_type": data_type},
+        params={"patient_id": patient_id, "data_type": data_type},
     )
+    ic(response)
     parquet_file_paths = response.json()
-
+    ic(parquet_file_paths)
     displayed_file_paths = []
     for path in parquet_file_paths:
         match = re.search(r"/default/train/(\d{4})\.parquet$", path)
