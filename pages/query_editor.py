@@ -68,8 +68,12 @@ def send_python_code(python_code, selected_libraries):
 
 
 def main():
-    st.set_page_config(page_title="Real-Time Code Creation")
-    st.title("Real-Time Code Creation")
+    st.set_page_config(
+        page_title="EEG Query Editor",
+        page_icon="⚙️",
+        layout="wide",
+    )
+    st.title("Query Editor")
 
     col1, col2 = st.columns(2)
 
