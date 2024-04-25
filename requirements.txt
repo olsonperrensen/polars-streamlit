@@ -4,3 +4,4 @@ polars
 fastapi
 uvicorn[standard]
 requests
+pyarrow
