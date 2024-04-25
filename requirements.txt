@@ -3,7 +3,7 @@ uvicorn[standard]
 polars
 pandas
 numpy
-sklearn
+scikit-learn
 matplotlib
 seaborn
 tensorflow
