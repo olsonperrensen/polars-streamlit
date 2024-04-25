@@ -1,91 +1,13 @@
-# cloud
-modal
-# Data Visualization
-altair
-plotly
-great_tables
-
-# Data Processing
+fastapi
+uvicorn[standard]
 polars
 pandas
 numpy
-
-# Web Framework
-fastapi
-uvicorn[standard]
-
-# Authentication
-pyjwt
-python-multipart
-
-# Package Management
-pip
-requests
-certifi
-
-# Progress Bar
-tqdm
-
-# Visualization
+sklearn
 matplotlib
 seaborn
-
-# Linting
-ruff
-black
-
-# Machine Learning
-scikit-learn
-xgboost
-lightgbm
-catboost
-imbalanced-learn
-
-# Deep Learning
 tensorflow
-torch 
-torchvision
-transformers
+torch
+altair
+plotly
 keras
-keras-tuner
-
-# Natural Language Processing
-nltk
-spacy
-huggingface-hub
-
-# huggingface dataset
-datasets
-
-# Data Manipulation
-pandas-profiling
-
-# Dashboarding
-streamlit
-panel
-dash
-
-# Automation
-prefect
-
-# Deployment
-docker
-kubernetes
-
-# Database
-psycopg2
-sqlalchemy
-pymongo
-redis
-
-# Cloud
-boto3
-google-cloud-storage
-azure-storage-blob
-
-# Testing
-pytest
-hypothesis
-
-# Logging
-loguru
