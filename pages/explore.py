@@ -224,8 +224,23 @@ def app():
                 # Heatmap visualization code
         elif graph_type == "Line Chart":
             with tab3:
-                st.info("TODO LINE")
-                # Line chart visualization code
+                if st.session_state.steps:
+                    last_step = st.session_state.steps[-1]
+                    # Send a request to the backend with the collected steps
+                    response = requests.post(f"{API_URL}/line_chart", json=last_step)
+
+                    if last_step["interactive_plot"]:
+                        chart_spec = json.loads(response.json())
+                        chart = alt.Chart.from_dict(chart_spec)
+                        st.altair_chart(chart, use_container_width=True)
+                        log_activity(
+                            f"Displayed interactive line chart for {last_step['parquet_url']}"
+                        )
+                    else:
+                        st.image(response.content, use_column_width=True)
+                        log_activity(
+                            f"Displayed static line chart for {last_step['parquet_url']}"
+                        )
 
         # About/Help section
         with st.expander("About", expanded=True):
