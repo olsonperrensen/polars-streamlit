@@ -10,6 +10,7 @@ from pydantic import BaseModel
 import sys
 from io import StringIO
 from script.script import dl_script
+from datasets import load_dataset
 
 
 app = FastAPI()
@@ -36,6 +37,14 @@ class CodeBody(BaseModel):
 @app.get("/health")
 def health_check():
     return {"status": "OK"}
+
+
+@app.get("/huggingface")
+async def hface():
+    dataset = load_dataset("rotten_tomatoes", split="train")
+    df = pl.from_arrow(dataset.data.table)
+    print(df)
+    return df.write_json(pretty=True)
 
 
 class Dataset(BaseModel):

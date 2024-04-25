@@ -53,6 +53,9 @@ spacy
 gensim
 huggingface-hub
 
+# huggingface dataset
+datasets
+
 # Data Manipulation
 pandas-profiling
 
