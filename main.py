@@ -159,17 +159,38 @@ def heatmap(request: PlotRequest):
 
 @app.post("/line_chart")
 def line_chart(request: PlotRequest):
+    if (
+        not request.parquet_url
+        or not request.columns
+        or not request.num_rows
+        or len(request.columns) < 2
+    ):
+        raise HTTPException(status_code=400, detail="Missing required arguments")
+
+    # Read the downloaded Parquet file into a Polars DataFrame
     df = pl.read_parquet(
         request.parquet_url, columns=request.columns, n_rows=request.num_rows
     )
+
     df_pd = df.to_pandas()
     chart = (
         alt.Chart(df_pd)
         .mark_line()
-        .encode(x="AF3", y="FC6", color="O1")
+        .encode(
+            x=request.columns[0],
+            y=request.columns[1],
+            color=request.columns[2] if len(request.columns) > 2 else None,
+        )
         .properties(width=600, height=400)
     )
-    return chart.to_json()
+
+    if request.interactive_plot:
+        print("interactive line_chart")
+        return chart.to_json()
+    else:
+        print("still line_chart")
+        img_bytes = chart.to_png(scale_factor=2.0)
+        return Response(content=img_bytes, media_type="image/png")
 
 
 @contextlib.contextmanager
