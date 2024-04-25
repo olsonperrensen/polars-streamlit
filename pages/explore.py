@@ -181,7 +181,7 @@ def app():
                 interactive_plot = st.checkbox("Interactive Plot", value=True)
 
             graph_type = st.selectbox(
-                "Select Graph Type", ["Interactive 3D Plot", "Heatmap", "Line Chart"]
+                "Select Graph Type", ["3D Plot", "Heatmap", "Line Chart"]
             )
 
         if st.button("Save preferences"):
@@ -201,49 +201,46 @@ def app():
             )
 
         # Visualization tabs
-        tab1, tab2, tab3 = st.tabs(["Interactive 3D Plot", "Heatmap", "Line Chart"])
+        result_tab, logging_dashboard_tab = st.tabs(["Result", "Log"])
 
-        if graph_type == "Interactive 3D Plot":
-            with tab1:
+        def render_plot(graph_type, tab):
+            with tab:
                 if st.session_state.steps:
                     last_step = st.session_state.steps[-1]
                     # Send a request to the backend with the collected steps
-                    response = requests.post(f"{API_URL}/plot_3d", json=last_step)
+                    response = requests.post(
+                        f"{API_URL}/{graph_type.lower().replace(' ', '_')}",
+                        json=last_step,
+                    )
+
                     if last_step["interactive_plot"]:
-                        raw_res = json.loads(response.json())
-                        fig = go.Figure(data=raw_res["data"], layout=raw_res["layout"])
-                        st.plotly_chart(fig)
+                        if graph_type == "3D Plot":
+                            raw_res = json.loads(response.json())
+                            fig = go.Figure(
+                                data=raw_res["data"], layout=raw_res["layout"]
+                            )
+                            st.plotly_chart(fig)
+                        elif graph_type == "Line Chart":
+                            chart_spec = json.loads(response.json())
+                            chart = alt.Chart.from_dict(chart_spec)
+                            st.altair_chart(chart, use_container_width=True)
                         log_activity(
-                            f"Displayed interactive 3D plot for {last_step['parquet_url']}"
+                            f"Displayed interactive {graph_type.lower()} for {last_step['parquet_url']}"
                         )
                     else:
                         st.image(response.content, use_column_width=True)
                         log_activity(
-                            f"Displayed static 3D plot for {last_step['parquet_url']}"
+                            f"Displayed static {graph_type.lower()} for {last_step['parquet_url']}"
                         )
+
+        if graph_type == "3D Plot":
+            render_plot(graph_type, result_tab)
         elif graph_type == "Heatmap":
-            with tab2:
+            with result_tab:
                 pass
                 # Heatmap visualization code
         elif graph_type == "Line Chart":
-            with tab3:
-                if st.session_state.steps:
-                    last_step = st.session_state.steps[-1]
-                    # Send a request to the backend with the collected steps
-                    response = requests.post(f"{API_URL}/line_chart", json=last_step)
-
-                    if last_step["interactive_plot"]:
-                        chart_spec = json.loads(response.json())
-                        chart = alt.Chart.from_dict(chart_spec)
-                        st.altair_chart(chart, use_container_width=True)
-                        log_activity(
-                            f"Displayed interactive line chart for {last_step['parquet_url']}"
-                        )
-                    else:
-                        st.image(response.content, use_column_width=True)
-                        log_activity(
-                            f"Displayed static line chart for {last_step['parquet_url']}"
-                        )
+            render_plot(graph_type, result_tab)
 
         # About/Help section
         with st.expander("About", expanded=True):
