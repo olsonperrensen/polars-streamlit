@@ -1,8 +1,6 @@
-# backend.py
 import contextlib
 from typing import List
 from fastapi import FastAPI, HTTPException, Query, Response, BackgroundTasks
-import os
 import polars as pl
 import plotly.express as px
 import altair as alt
@@ -12,7 +10,6 @@ from io import StringIO
 from script.script import dl_script
 from datasets import load_dataset
 import requests
-import re
 
 app = FastAPI()
 
