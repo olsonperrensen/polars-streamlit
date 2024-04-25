@@ -159,7 +159,10 @@ def app():
             # Select columns
             with st.expander("Select Columns"):
                 selected_columns = st.multiselect(
-                    "Columns to use", column_names, default=column_names[:4]
+                    "Columns to load",
+                    column_names,
+                    default=column_names[:4],
+                    max_selections=4,
                 )
 
             # Select number of rows
