@@ -176,32 +176,6 @@ def app():
                 color_axis = st.selectbox("Color axis", selected_columns)
                 interactive_plot = st.checkbox("Interactive Plot", value=True)
 
-        # Log Parquet file selection
-        if parquet_file:
-            log_activity(f"Selected Parquet file: {parquet_file}")
-
-        # Log column selection
-        if selected_columns:
-            log_activity(f"Selected columns: {', '.join(selected_columns)}")
-
-        # Log number of rows selection
-        if num_rows:
-            log_activity(f"Selected number of rows: {num_rows}")
-
-        # Log axis selections
-        if x_axis:
-            log_activity(f"Selected X-axis: {x_axis}")
-        if y_axis:
-            log_activity(f"Selected Y-axis: {y_axis}")
-        if z_axis:
-            log_activity(f"Selected Z-axis: {z_axis}")
-        if color_axis:
-            log_activity(f"Selected color axis: {color_axis}")
-
-        # Log interactive plot selection
-        if interactive_plot is not None:
-            log_activity(f"Selected interactive plot: {interactive_plot}")
-
         if st.button("Save preferences"):
             step = {
                 "parquet_file": parquet_file,
@@ -258,8 +232,33 @@ def app():
                 - Save your preferences to explore different visualizations.
             """
             )
+        # Log Parquet file selection
+        if parquet_file:
+            log_activity(f"Selected Parquet file: {parquet_file}")
 
-        if st.button("LLM"):
+        # Log column selection
+        if selected_columns:
+            log_activity(f"Selected columns: {', '.join(selected_columns)}")
+
+        # Log number of rows selection
+        if num_rows:
+            log_activity(f"Selected number of rows: {num_rows}")
+
+        # Log axis selections
+        if x_axis:
+            log_activity(f"Selected X-axis: {x_axis}")
+        if y_axis:
+            log_activity(f"Selected Y-axis: {y_axis}")
+        if z_axis:
+            log_activity(f"Selected Z-axis: {z_axis}")
+        if color_axis:
+            log_activity(f"Selected color axis: {color_axis}")
+
+        # Log interactive plot selection
+        if interactive_plot is not None:
+            log_activity(f"Selected interactive plot: {interactive_plot}")
+
+        if st.button("Disconnect"):
             # Get the end time
             global end_time
             end_time = time.time()
@@ -270,10 +269,6 @@ def app():
             # Calculate the total time spent
             total_time_spent = end_time - start_time
             log_activity(f"Total time spent on the app: {total_time_spent:.2f} seconds")
-            try:
-                st.switch_page("pages/llm.py")
-            except Exception as e:
-                print(e)
 
 
 @st.cache_data
