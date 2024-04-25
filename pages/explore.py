@@ -9,6 +9,7 @@ import time
 from collections import deque
 import pytz
 import os
+import re
 
 # Set the API endpoint URL
 API_URL = os.environ.get("AUTH_ENDPOINT_URL", "http://localhost:8000")
@@ -140,7 +141,7 @@ def app():
 
     # Main content area
     if patient_dir and data_type:
-        parquet_file_paths, column_names, max_rows = load_parquet_files(
+        full_urls, displayed_urls, column_names, row_count = load_parquet_files(
             patient_dir, data_type
         )
 
@@ -148,7 +149,7 @@ def app():
 
         with col1:
             # Select Parquet file
-            parquet_file = st.selectbox("Select a Parquet file", parquet_file_paths)
+            parquet_file = st.selectbox("Select a Parquet file", displayed_urls)
 
             # Select columns
             with st.expander("Select Columns"):
@@ -160,9 +161,9 @@ def app():
             num_rows = st.number_input(
                 "Number of rows to load",
                 min_value=1,
-                value=max_rows // 100,
+                value=row_count // 100,
                 step=1,
-                max_value=max_rows,
+                max_value=row_count,
             )
 
         with col2:
@@ -294,6 +295,12 @@ def load_parquet_files(patient_dir, data_type):
     )
     parquet_file_paths = response.json()
 
+    displayed_file_paths = []
+    for path in parquet_file_paths:
+        match = re.search(r"/default/train/(\d{4})\.parquet$", path)
+        if match:
+            displayed_file_paths.append(f"/default/train/{match.group(1)}.parquet")
+
     if parquet_file_paths:
         response = requests.get(
             f"{API_URL}/column_names", params={"parquet_file": parquet_file_paths[0]}
@@ -303,7 +310,7 @@ def load_parquet_files(patient_dir, data_type):
     else:
         column_names, row_count = [], 0
 
-    return parquet_file_paths, column_names, row_count
+    return parquet_file_paths, displayed_file_paths, column_names, row_count
 
 
 if __name__ == "__main__":
