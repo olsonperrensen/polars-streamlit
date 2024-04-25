@@ -177,6 +177,10 @@ def app():
                 color_axis = st.selectbox("Color axis", selected_columns)
                 interactive_plot = st.checkbox("Interactive Plot", value=True)
 
+            graph_type = st.selectbox(
+                "Select Graph Type", ["Interactive 3D Plot", "Heatmap", "Line Chart"]
+            )
+
         if st.button("Save preferences"):
             step = {
                 "parquet_url": parquet_url,
@@ -196,31 +200,32 @@ def app():
         # Visualization tabs
         tab1, tab2, tab3 = st.tabs(["Interactive 3D Plot", "Heatmap", "Line Chart"])
 
-        with tab1:
-            if st.session_state.steps:
-                last_step = st.session_state.steps[-1]
-                # Send a request to the backend with the collected steps
-                response = requests.post(f"{API_URL}/plot_3d", json=last_step)
-                if last_step["interactive_plot"]:
-                    raw_res = json.loads(response.json())
-                    fig = go.Figure(data=raw_res["data"], layout=raw_res["layout"])
-                    st.plotly_chart(fig)
-                    log_activity(
-                        f"Displayed interactive 3D plot for {last_step['parquet_url']}"
-                    )
-                else:
-                    st.image(response.content, use_column_width=True)
-                    log_activity(
-                        f"Displayed static 3D plot for {last_step['parquet_url']}"
-                    )
-
-        with tab2:
-            pass
-            # Heatmap visualization code
-
-        with tab3:
-            pass
-            # Line chart visualization code
+        if graph_type == "Interactive 3D Plot":
+            with tab1:
+                if st.session_state.steps:
+                    last_step = st.session_state.steps[-1]
+                    # Send a request to the backend with the collected steps
+                    response = requests.post(f"{API_URL}/plot_3d", json=last_step)
+                    if last_step["interactive_plot"]:
+                        raw_res = json.loads(response.json())
+                        fig = go.Figure(data=raw_res["data"], layout=raw_res["layout"])
+                        st.plotly_chart(fig)
+                        log_activity(
+                            f"Displayed interactive 3D plot for {last_step['parquet_url']}"
+                        )
+                    else:
+                        st.image(response.content, use_column_width=True)
+                        log_activity(
+                            f"Displayed static 3D plot for {last_step['parquet_url']}"
+                        )
+        elif graph_type == "Heatmap":
+            with tab2:
+                pass
+                # Heatmap visualization code
+        elif graph_type == "Line Chart":
+            with tab3:
+                st.info("TODO LINE")
+                # Line chart visualization code
 
         # About/Help section
         with st.expander("About", expanded=True):
