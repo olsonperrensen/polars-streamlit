@@ -182,7 +182,9 @@ def main():
             action_code = get_action_code(action)
             st.code(action_code, language="python")
             # Python code input
-            python_code = st.text_area("Additional Python code:", height=200)
+            python_code = st.text_area(
+                "Additional Python code:", height=200, placeholder="print(df.to_json())"
+            )
 
             if st.button("Execute"):
                 # if python_code.strip():
