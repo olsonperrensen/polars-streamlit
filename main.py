@@ -8,11 +8,15 @@ from pydantic import BaseModel
 import sys
 from io import StringIO
 import requests
+import subprocess
+import re
 
 app = FastAPI()
 
 # Set the root directory
 root_dir = "data\\A\\B"
+
+PACKAGE_NAME_PATTERN = r"^[a-zA-Z0-9_\-]+$"
 
 
 class PlotRequest(BaseModel):
@@ -211,5 +215,50 @@ def execute_python_code(code_body: CodeBody):
     sys.stdout = sys.__stdout__
     return {
         "output": stdout_buffer.getvalue(),
+        "result": user_namespace.get("result", None),
+    }
+
+
+@app.post("/expand-package")
+async def expand_package(package: str):
+    user_namespace = {}
+    stdout_buffer = StringIO()
+    stderr_buffer = StringIO()
+
+    # Check if the package name is valid
+    if not re.match(PACKAGE_NAME_PATTERN, package):
+        stderr_buffer.write("Invalid package name")
+        return {
+            "output": "",
+            "error": stderr_buffer.getvalue(),
+            "result": None,
+        }
+
+    try:
+        # Construct the command with the prefix
+        command = f"pip install --upgrade {package}"
+
+        # Execute the command
+        result = subprocess.run(
+            command,
+            shell=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+        )
+
+        # Capture the output
+        stdout_buffer.write(result.stdout)
+        stderr_buffer.write(result.stderr)
+
+        # Add the result to the user namespace
+        user_namespace["result"] = result.returncode
+
+    except Exception as e:
+        stderr_buffer.write(str(e))
+
+    return {
+        "output": stdout_buffer.getvalue(),
+        "error": stderr_buffer.getvalue(),
         "result": user_namespace.get("result", None),
     }
