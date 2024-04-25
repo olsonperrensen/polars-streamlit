@@ -6,8 +6,5 @@ numpy
 scikit-learn
 matplotlib
 seaborn
-tensorflow
-torch
 altair
 plotly
-keras
