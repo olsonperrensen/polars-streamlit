@@ -11,7 +11,8 @@ import sys
 from io import StringIO
 from script.script import dl_script
 from datasets import load_dataset
-
+import requests
+import re
 
 app = FastAPI()
 
@@ -63,7 +64,18 @@ async def process_dataset(dataset: Dataset, background_tasks: BackgroundTasks):
 
 @app.get("/patients")
 def get_patients():
-    patient_dirs = [d for d in os.listdir(root_dir) if d.startswith("(S")]
+    r = requests.get(
+        "https://datasets-server.huggingface.co/parquet?dataset=NOttheol/EEG-Talha-Alakus-Gonen-Turkoglu"
+    )
+    j = r.json()
+    urls = [f["url"] for f in j["parquet_files"] if f["split"] == "train"]
+
+    patient_dirs = []
+    for url in urls:
+        match = re.search(r"/(\d{4})\.parquet$", url)
+        if match:
+            patient_dirs.append(match.group(1))
+
     return patient_dirs
 
 
@@ -74,13 +86,12 @@ def get_data_types():
 
 @app.get("/parquet_files")
 def get_parquet_files(patient_dir: str, data_type: str):
-    dir_path = os.path.join(root_dir, patient_dir, f"{data_type}\\.csv format")
-    parquet_files = [
-        os.path.join(dir_path, f.replace("\\", "\\\\"))
-        for f in os.listdir(dir_path)
-        if f.endswith(".parquet")
-    ]
-    return parquet_files
+    r = requests.get(
+        "https://datasets-server.huggingface.co/parquet?dataset=NOttheol/EEG-Talha-Alakus-Gonen-Turkoglu"
+    )
+    j = r.json()
+    urls = [f["url"] for f in j["parquet_files"] if f["split"] == "train"]
+    return urls
 
 
 @app.get("/column_names")
