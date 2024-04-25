@@ -8,3 +8,8 @@ matplotlib
 seaborn
 altair
 plotly
+requests
+pyarrow
+kaleido
+torch
+keras
