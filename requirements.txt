@@ -1,16 +1,91 @@
-streamlit
-pandas
+# cloud
+modal
+# Data Visualization
 altair
 plotly
 great_tables
+
+# Data Processing
 polars
+pandas
+numpy
+
+# Web Framework
+fastapi
+uvicorn[standard]
+
+# Authentication
+pyjwt
 python-multipart
-st_pages
-seaborn
+
+# Package Management
 pip
-icecream
-aiohttp
-selenium
+requests
+certifi
+
+# Progress Bar
 tqdm
-streamlit-modal
+
+# Visualization
+matplotlib
+seaborn
+
+# Linting
 ruff
+black
+
+# Machine Learning
+scikit-learn
+xgboost
+lightgbm
+catboost
+imbalanced-learn
+
+# Deep Learning
+tensorflow
+torch 
+torchvision
+transformers
+keras
+keras-tuner
+
+# Natural Language Processing
+nltk
+spacy
+huggingface-hub
+
+# huggingface dataset
+datasets
+
+# Data Manipulation
+pandas-profiling
+
+# Dashboarding
+streamlit
+panel
+dash
+
+# Automation
+prefect
+
+# Deployment
+docker
+kubernetes
+
+# Database
+psycopg2
+sqlalchemy
+pymongo
+redis
+
+# Cloud
+boto3
+google-cloud-storage
+azure-storage-blob
+
+# Testing
+pytest
+hypothesis
+
+# Logging
+loguru
