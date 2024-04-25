@@ -13,7 +13,7 @@ hide_pages(
 show_pages(
     [
         Page("pages/explore.py", "Explore", "🔍"),
-        Page("pages/own_polars.py", "Own Polars", "🐻‍❄️"),
+        Page("pages/query_editor.py", "Query Editor", "🐻‍❄️"),
     ]
 )
 
@@ -35,7 +35,7 @@ with col2:
 
 st.subheader("| Quick start")
 st.write(
-    '<p style="color:#9c9d9f">To start using the application go to the "explore" tab. Please be sure to have an existing account with us and be logged in.</p>',
+    '<p style="color:#9c9d9f">To start using the application go to the "<a href="https://hk3lab.streamlit.app/Explore">🔍Explore</a>" tab. Please be sure to have an existing account with us and be logged in.</p>',
     unsafe_allow_html=True,
 )
 st.subheader("| Controls")

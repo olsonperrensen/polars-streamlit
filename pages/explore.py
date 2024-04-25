@@ -22,6 +22,9 @@ st.set_page_config(
     layout="wide",
 )
 
+if st.button("Switch to Query Editor"):
+    st.switch_page("pages/query_editor.py")
+
 alt.themes.enable("dark")  # Enable dark theme
 
 # Initialize the activity log
@@ -278,18 +281,16 @@ def app():
         # Log interactive plot selection
         if interactive_plot is not None:
             log_activity(f"Selected interactive plot: {interactive_plot}")
+            # # Get the end time
+            # global end_time
+            # end_time = time.time()
 
-        if st.button("Disconnect"):
-            # Get the end time
-            global end_time
-            end_time = time.time()
+            # # Log the end of the session
+            # log_activity("User ended the session")
 
-            # Log the end of the session
-            log_activity("User ended the session")
-
-            # Calculate the total time spent
-            total_time_spent = end_time - start_time
-            log_activity(f"Total time spent on the app: {total_time_spent:.2f} seconds")
+            # # Calculate the total time spent
+            # total_time_spent = end_time - start_time
+            # log_activity(f"Total time spent on the app: {total_time_spent:.2f} seconds")
 
 
 @st.cache_data
