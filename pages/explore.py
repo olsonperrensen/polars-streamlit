@@ -151,6 +151,7 @@ def app():
         with col1:
             # Select Parquet file
             parquet_file = st.selectbox("Select a Parquet file", displayed_urls)
+            parquet_url = f"https://huggingface.co/datasets/NOttheol/EEG-Talha-Alakus-Gonen-Turkoglu/resolve/refs%2Fconvert%2Fparquet{parquet_file}"
 
             # Select columns
             with st.expander("Select Columns"):
@@ -178,7 +179,7 @@ def app():
 
         if st.button("Save preferences"):
             step = {
-                "parquet_file": parquet_file,
+                "parquet_url": parquet_url,
                 "columns": selected_columns,
                 "num_rows": num_rows,
                 "x_axis": x_axis,
