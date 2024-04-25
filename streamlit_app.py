@@ -12,7 +12,6 @@ hide_pages(
 
 show_pages(
     [
-        Page("pages/dl.py", "dl", "⬇️"),
         Page("pages/explore.py", "Explore", "🔍"),
         Page("pages/own_polars.py", "Own Polars", "🐻‍❄️"),
     ]
