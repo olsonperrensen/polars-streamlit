@@ -7,7 +7,6 @@ import altair as alt
 from pydantic import BaseModel
 import sys
 from io import StringIO
-from datasets import load_dataset
 import requests
 
 app = FastAPI()
@@ -34,14 +33,6 @@ class CodeBody(BaseModel):
 @app.get("/health")
 def health_check():
     return {"status": "OK"}
-
-
-@app.get("/huggingface")
-async def hface():
-    dataset = load_dataset("rotten_tomatoes", split="train")
-    df = pl.from_arrow(dataset.data.table)
-    print(df)
-    return df.write_json(pretty=True)
 
 
 class Dataset(BaseModel):
