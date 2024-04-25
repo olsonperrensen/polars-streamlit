@@ -17,6 +17,7 @@ app = FastAPI()
 # Set the root directory
 root_dir = "data\\A\\B"
 
+REMOTE_SERVER_URL = "https://hk3lab-sandboxed-cfdfb79e98f1.herokuapp.com"
 PACKAGE_NAME_PATTERN = r"^[a-zA-Z0-9_\-]+$"
 ALLOWED_COMMANDS = ["pip", "pip3"]
 ALLOWED_PACKAGES = [
@@ -34,6 +35,10 @@ ALLOWED_PACKAGES = [
 ]
 
 
+class CodeBody(BaseModel):
+    python_code: str
+
+
 class PlotRequest(BaseModel):
     parquet_url: str
     columns: List[str]
@@ -43,10 +48,6 @@ class PlotRequest(BaseModel):
     z_axis: str
     color_axis: str
     interactive_plot: bool
-
-
-class CodeBody(BaseModel):
-    python_code: str
 
 
 @app.get("/health")
@@ -176,6 +177,20 @@ def heatmap(request: PlotRequest):
     return fig.to_json()
 
 
+@app.post("/execute_python")
+async def execute_python(code_body: CodeBody):
+    try:
+        # Send a GET request to the remote FastAPI server
+        response = requests.post(f"{REMOTE_SERVER_URL}/", json=code_body.dict())
+        response.raise_for_status()  # Raise an exception if the request failed
+
+        # Return the response from the remote server
+        return {"remote_response": response.json()}
+    except requests.exceptions.RequestException as e:
+        # Handle any exceptions that occurred during the request
+        return {"error": str(e)}
+
+
 @app.post("/line_chart")
 def line_chart(request: PlotRequest):
     if (
@@ -220,65 +235,3 @@ def redirect_stdout():
         yield new_target
     finally:
         sys.stdout = old_target
-
-
-@app.post("/execute_python")
-def execute_python_code(code_body: CodeBody):
-    user_namespace = {}
-    sys.stdout = stdout_buffer = StringIO()
-    exec(code_body.python_code, user_namespace)
-    sys.stdout = sys.__stdout__
-    return {
-        "output": stdout_buffer.getvalue(),
-        "result": user_namespace.get("result", None),
-    }
-
-
-@app.post("/expand-package")
-async def expand_package(package: str):
-    stdout_buffer = StringIO()
-    stderr_buffer = StringIO()
-
-    # Check if the package name is valid
-    if not re.match(PACKAGE_NAME_PATTERN, package):
-        stderr_buffer.write("Invalid package name")
-        return {
-            "output": "",
-            "error": stderr_buffer.getvalue(),
-            "result": None,
-        }
-
-    # Check if the package is allowed
-    if package not in ALLOWED_PACKAGES:
-        stderr_buffer.write("Package not allowed")
-        return {
-            "output": "",
-            "error": stderr_buffer.getvalue(),
-            "result": None,
-        }
-
-    try:
-        # Construct the command
-        command = f"pip install --upgrade {package}"
-
-        # Execute the command with limited permissions
-        result = subprocess.run(
-            command,
-            shell=True,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            text=True,
-        )
-
-        # Capture the output
-        stdout_buffer.write(result.stdout)
-        stderr_buffer.write(result.stderr)
-
-    except Exception as e:
-        stderr_buffer.write(str(e))
-
-    return {
-        "output": stdout_buffer.getvalue(),
-        "error": stderr_buffer.getvalue(),
-        "result": result.returncode if "result" in locals() else None,
-    }
