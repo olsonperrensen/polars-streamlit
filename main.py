@@ -149,7 +149,7 @@ def plot_3d(request: PlotRequest):
 @app.post("/heatmap")
 def heatmap(request: PlotRequest):
     df = pl.read_parquet(
-        request.parquet_file, columns=request.columns, n_rows=request.num_rows
+        request.parquet_url, columns=request.columns, n_rows=request.num_rows
     )
     df_pd = df.to_pandas()
     fig = px.imshow(df_pd.corr(), color_continuous_scale="RdBu_r", origin="lower")
@@ -160,7 +160,7 @@ def heatmap(request: PlotRequest):
 @app.post("/line_chart")
 def line_chart(request: PlotRequest):
     df = pl.read_parquet(
-        request.parquet_file, columns=request.columns, n_rows=request.num_rows
+        request.parquet_url, columns=request.columns, n_rows=request.num_rows
     )
     df_pd = df.to_pandas()
     chart = (
