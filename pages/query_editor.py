@@ -45,10 +45,6 @@ def send_python_code(python_code, selected_libraries, selected_actions):
                 temp_file.write("import seaborn as sns\n")
             if "sklearn" in selected_libraries:
                 temp_file.write("from sklearn import *\n")
-            if "tensorflow" in selected_libraries:
-                temp_file.write("import tensorflow as tf\n")
-            if "pytorch" in selected_libraries:
-                temp_file.write("import torch\n")
             if "altair" in selected_libraries:
                 temp_file.write("import altair as alt\n")
             if "plotly" in selected_libraries:
@@ -112,11 +108,28 @@ def main():
             "sklearn",
             "matplotlib",
             "seaborn",
-            "tensorflow",
-            "pytorch",
             "altair",
             "plotly",
             "keras",
+            "scipy",
+            "statsmodels",
+            "patsy",
+            "dask",
+            "xarray",
+            "pandas-profiling",
+            "category-encoders",
+            "scikit-learn",
+            "scikit-learn-extra",
+            "imbalanced-learn",
+            "shap",
+            "eli5",
+            "pydot",
+            "graphviz",
+            "pydotplus",
+            "networkx",
+            "pygsp",
+            "pyarrow",
+            "kaleido",
         ]
         selected_libraries = st.multiselect(
             "Select libraries/frameworks/packages:", libraries
