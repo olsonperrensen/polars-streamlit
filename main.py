@@ -64,19 +64,8 @@ async def process_dataset(dataset: Dataset, background_tasks: BackgroundTasks):
 
 @app.get("/patients")
 def get_patients():
-    r = requests.get(
-        "https://datasets-server.huggingface.co/parquet?dataset=NOttheol/EEG-Talha-Alakus-Gonen-Turkoglu"
-    )
-    j = r.json()
-    urls = [f["url"] for f in j["parquet_files"] if f["split"] == "train"]
-
-    patient_dirs = []
-    for url in urls:
-        match = re.search(r"/(\d{4})\.parquet$", url)
-        if match:
-            patient_dirs.append(match.group(1))
-
-    return patient_dirs
+    ids = [f"{i:04d}" for i in range(44)]
+    return ids
 
 
 @app.get("/data_types")
