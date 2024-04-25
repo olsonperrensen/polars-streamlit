@@ -27,5 +27,4 @@ pydot
 graphviz
 pydotplus
 networkx
-pygraphviz
 pygsp
