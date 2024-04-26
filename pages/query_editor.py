@@ -135,11 +135,14 @@ def main():
             "Select libraries/frameworks/packages:",
             libraries,
             default=["pandas", "polars", "numpy"],
+            key="multi-select-selected-libraries",
         )
 
     with col2:
         # Upload requirements.txt file
-        uploaded_file = st.file_uploader("Upload requirements.txt file", type="txt")
+        uploaded_file = st.file_uploader(
+            "Upload requirements.txt file", type="txt", key="uploaded-file-section"
+        )
 
     if uploaded_file is not None:
         # Read the contents of the uploaded file
@@ -159,14 +162,20 @@ def main():
             library_imports = "\n".join(
                 [f"import {library}" for library in merged_libraries]
             )
-            st.code(library_imports, language="python")
+            st.code(
+                library_imports,
+                language="python",
+            )
     else:
         if selected_libraries:
             with st.expander("Selected Libraries"):
                 library_imports = "\n".join(
                     [f"import {library}" for library in selected_libraries]
                 )
-                st.code(library_imports, language="python")
+                st.code(
+                    library_imports,
+                    language="python",
+                )
     # Select data exploration actions
     actions = [
         "Data Loading",
@@ -175,7 +184,9 @@ def main():
         "Data Visualization",
         "Model Training",
     ]
-    selected_actions = st.multiselect("Select data exploration actions:", actions)
+    selected_actions = st.multiselect(
+        "Select data exploration actions:", actions, key="select-data-exp-mselect"
+    )
 
     if selected_actions:
         for action in selected_actions:
@@ -183,10 +194,13 @@ def main():
             st.code(action_code, language="python")
             # Python code input
             python_code = st.text_area(
-                "Additional Python code:", height=200, placeholder="print(df.to_json())"
+                "Additional Python code:",
+                height=200,
+                placeholder="print(df.to_json())",
+                key="py-code-gen-ota",
             )
 
-            if st.button("Execute"):
+            if st.button("Execute", key="exec-code-py-btn"):
                 # if python_code.strip():
                 #     result = send_python_code(python_code, selected_libraries)
                 #     st.subheader("Execution Result")
@@ -211,21 +225,24 @@ def main():
                         if output:
                             st.subheader("Output")
                             output = json.loads(output)
-                            st.data_editor(output)
+                            st.data_editor(
+                                output, key="data-editor-based-on-pd-df-output"
+                            )
 
                         if result is not None:
                             st.subheader("Result")
                             if isinstance(result, pd.DataFrame):
-                                st.dataframe(result)
+                                st.dataframe(result, key="df-res")
                                 df_name = st.text_input(
-                                    "Enter a name for the DataFrame:"
+                                    "Enter a name for the DataFrame:",
+                                    key="df-naming-text-input-area",
                                 )
                                 if df_name:
                                     st.session_state.history.append(
                                         (python_code, df_name)
                                     )
                             else:
-                                st.write(result)
+                                st.write(result, key="writing-raw-res")
 
     # Continuous workflow
     if "history" not in st.session_state:
@@ -237,9 +254,9 @@ def main():
             with st.expander(f"Step {idx}"):
                 st.code(code, language="python")
                 if df_name:
-                    st.write(f"DataFrame: {df_name}")
+                    st.write(f"DataFrame: {df_name}", key="df-df-name-writer")
 
-        if st.button("Clear History"):
+        if st.button("Clear History", key="btn-to-clear-history-end-section"):
             st.session_state.history = []
 
 
