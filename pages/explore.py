@@ -22,7 +22,7 @@ st.set_page_config(
     layout="wide",
 )
 
-if st.button("Switch to Query Editor"):
+if st.button("Switch to Query Editor", key="switch-to-query-editor"):
     st.switch_page("pages/query_editor.py")
 
 alt.themes.enable("dark")  # Enable dark theme
@@ -80,7 +80,7 @@ def app():
                 "Oops, it looks like the backend server is not responding at the moment. "
                 "Please try again in a few minutes. If the issue persists, contact the system administrator."
             )
-            st.write("Error details:")
+            st.write("Error details:", key="error-details")
             st.markdown(f"{response.text}")
             return
     except requests.exceptions.RequestException as e:
