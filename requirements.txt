@@ -28,3 +28,4 @@ graphviz
 pydotplus
 networkx
 pygsp
+black
