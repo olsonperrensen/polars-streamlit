@@ -33,3 +33,5 @@ show_pages(
         Page("pages/Query.py", "Query", "📅"),
     ]
 )
+
+st.write()

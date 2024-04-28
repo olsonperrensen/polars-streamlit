@@ -5,6 +5,7 @@ _secret_auth_.json
 .csv
 # Byte-compiled / optimized Python files
 __pycache__/
+.devcontainer/
 *.pyc
 *.pyo
 *.pyd
