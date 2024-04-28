@@ -75,8 +75,8 @@ text-align: left; /* you can replace 'left' with 'center' or 'right' if you want
 show_pages(
     [
         Page("app.py", "About Project", "🚩"),
-        Page("pages/About.py", "About HK3lab", "🧑‍💼"),
-        Page("pages/HExplore.py", "HExplore", "📈"),
+        Page("pages/About.py", "HK3lab", "🌇"),
+        Page("pages/HExplore.py", "Explore", "📈"),
         Page("pages/Query.py", "Query", "📅"),
     ]
 )
