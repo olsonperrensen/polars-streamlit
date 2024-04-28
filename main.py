@@ -8,10 +8,7 @@ from pydantic import BaseModel
 import sys
 from io import StringIO
 import requests
-import subprocess
-import re
 import pandas as pd
-import os
 
 app = FastAPI()
 
@@ -171,7 +168,6 @@ class DataframeRequest(BaseModel):
     parquet_url: str
     columns: List[str]
     num_rows: int
-    selected_columns: List[str]
     removed_columns: List[str]
 
 
@@ -180,7 +176,7 @@ async def get_dataframe(request: DataframeRequest):
     parquet_url = request.parquet_url
     columns = request.columns
     num_rows = request.num_rows
-    selected_columns = request.selected_columns
+    selected_columns = request.columns
     removed_columns = request.removed_columns
 
     df = pd.read_parquet(parquet_url, columns=columns)
