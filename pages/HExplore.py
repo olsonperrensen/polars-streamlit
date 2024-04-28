@@ -187,7 +187,7 @@ def app():
                 interactive_plot = st.checkbox("Interactive Plot", value=True)
 
             graph_type = st.selectbox(
-                "Select Graph Type", ["3D Plot", "Heatmap", "Line Chart"]
+                "Select Graph Type", ["3D Plot", "Heatmap", "Line Chart", "Dataframe"]
             )
 
         if st.button("Save preferences"):
@@ -239,13 +239,12 @@ def app():
                             f"Displayed static {graph_type.lower()} for {last_step['parquet_url']}"
                         )
 
-        if graph_type == "3D Plot":
-            render_plot(graph_type, result_tab)
-        elif graph_type == "Heatmap":
-            with result_tab:
-                pass
-                # Heatmap visualization code
-        elif graph_type == "Line Chart":
+        if graph_type:
+            removed_columns = st.multiselect(
+                "Select columns to remove from dataframe",
+                selected_columns,
+                default=[],
+            )
             render_plot(graph_type, result_tab)
 
         # About/Help section
