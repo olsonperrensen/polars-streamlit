@@ -10,6 +10,7 @@ from io import StringIO
 import requests
 import subprocess
 import re
+import pandas as pd
 import os
 
 app = FastAPI()
@@ -164,6 +165,28 @@ def dried_plot(request: PlotRequest):
     else:
         img_bytes = fig.to_image(format="png", width=600, height=350, scale=2)
         return Response(content=img_bytes, media_type="image/png")
+
+
+class DataframeRequest(BaseModel):
+    parquet_url: str
+    columns: List[str]
+    num_rows: int
+    selected_columns: List[str]
+    removed_columns: List[str]
+
+
+@app.post("/dataframe")
+async def get_dataframe(request: DataframeRequest):
+    parquet_url = request.parquet_url
+    columns = request.columns
+    num_rows = request.num_rows
+    selected_columns = request.selected_columns
+    removed_columns = request.removed_columns
+
+    df = pd.read_parquet(parquet_url, columns=columns)
+    df = df[selected_columns].drop(columns=removed_columns).head(num_rows)
+
+    return df.to_dict(orient="records")
 
 
 @app.post("/heatmap")
