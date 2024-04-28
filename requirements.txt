@@ -9,3 +9,6 @@ pip
 icecream
 streamlit-modal
 black
+trycourier==4.4.0
+argon2-cffi
+streamlit-login-auth-ui

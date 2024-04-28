@@ -7,6 +7,11 @@ import pandas as pd
 import re
 import tempfile
 import subprocess
+from streamlit_app import logged_in
+
+if not logged_in():
+    st.warning("Authenticate")
+    st.stop()
 
 API_URL = os.environ.get("AUTH_ENDPOINT_URL", "http://localhost:8000")
 

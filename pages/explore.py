@@ -11,9 +11,7 @@ import pytz
 import os
 import re
 from icecream import ic
-
-# Set the API endpoint URL
-API_URL = os.environ.get("AUTH_ENDPOINT_URL", "http://localhost:8000")
+from streamlit_app import logged_in
 
 # Set page configuration
 st.set_page_config(
@@ -22,8 +20,15 @@ st.set_page_config(
     layout="wide",
 )
 
+if not logged_in():
+    st.warning("Authenticate")
+    st.stop()
+
+# Set the API endpoint URL
+API_URL = os.environ.get("AUTH_ENDPOINT_URL", "http://localhost:8000")
+
 if st.button("Switch to Query Editor", key="switch-to-query-editor"):
-    st.switch_page("pages/query_editor.py")
+    st.switch_page("pages/Query.py")
 
 alt.themes.enable("dark")  # Enable dark theme
 
