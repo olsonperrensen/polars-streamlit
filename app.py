@@ -78,6 +78,7 @@ show_pages(
         Page("pages/About.py", "HK3lab", "🌇"),
         Page("pages/HExplore.py", "Explore", "📈"),
         Page("pages/Query.py", "Query", "📅"),
+        Page("pages/llm.py", "Experiment", "🦄"),
     ]
 )
 st.title("🌟 Welcome to PolarSpace! 🌌")
