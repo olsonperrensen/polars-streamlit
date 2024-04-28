@@ -5,7 +5,7 @@ import os
 import pandas as pd
 import tempfile
 import subprocess
-from app import logged_in
+from app import logged_in, render_footer
 
 st.set_page_config(
     page_title="PolarSpace",
@@ -262,6 +262,7 @@ def main():
 
         if st.button("Clear History", key="btn-to-clear-history-end-section"):
             st.session_state.history = []
+    render_footer()
 
 
 if __name__ == "__main__":

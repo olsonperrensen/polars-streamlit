@@ -1,5 +1,5 @@
 import streamlit as st
-from app import logged_in
+from app import logged_in, render_footer
 
 st.set_page_config(
     page_title="PolarSpace",
@@ -35,3 +35,4 @@ st.write(
 st.subheader("| Controls")
 controls_text = "Desktop: please use the arrow controls provided at the sidebar when inspecing DataFrames."
 st.write(f'<p style="color:#9c9d9f">{controls_text}</p>', unsafe_allow_html=True)
+render_footer()

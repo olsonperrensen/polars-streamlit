@@ -10,7 +10,7 @@ import pytz
 import os
 import re
 from icecream import ic
-from app import logged_in
+from app import logged_in, render_footer
 
 st.set_page_config(
     page_title="PolarSpace",
@@ -294,6 +294,7 @@ def app():
             # # Calculate the total time spent
             # total_time_spent = end_time - start_time
             # log_activity(f"Total time spent on the app: {total_time_spent:.2f} seconds")
+    render_footer()
 
 
 @st.cache_data

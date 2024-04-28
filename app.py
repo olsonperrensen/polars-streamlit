@@ -25,6 +25,53 @@ def logged_in():
     return LOGGED_IN
 
 
+def render_footer():
+    ft = """
+<style>
+a:link , a:visited{
+color: #BFBFBF;  /* theme's text color hex code at 75 percent brightness*/
+background-color: transparent;
+text-decoration: none;
+}
+
+a:hover,  a:active {
+color: #0283C3; /* theme's primary color*/
+background-color: transparent;
+text-decoration: underline;
+}
+
+#page-container {
+  position: relative;
+  min-height: 10vh;
+}
+
+footer{
+    visibility:hidden;
+}
+
+.footer {
+position: relative;
+left: 0;
+top:230px;
+bottom: 0;
+width: 100%;
+background-color: transparent;
+color: #808080; /* theme's text color hex code at 50 percent brightness*/
+text-align: left; /* you can replace 'left' with 'center' or 'right' if you want*/
+}
+</style>
+
+<div id="page-container">
+
+<div class="footer">
+<p style='font-size: 0.875em;'>2024 © HK3 Lab S.r.l. Via Parteli 19 38068 Rovereto (TN) - Italy - PI/CF 02572270227</p>
+</div>
+
+</div>
+"""
+    st.write(ft, unsafe_allow_html=True)
+
+
 show_pages(
     [
         Page("app.py", "About Project", "🚩"),
@@ -88,3 +135,6 @@ with st.expander("🎓A final word"):
     st.write(
         "PolarSpace is continuously evolving to provide an even better user experience. Get ready to unleash the power of data analysis and visualization with PolarSpace. Happy data-ing! 🌠💫"
     )
+
+
+render_footer()
