@@ -28,7 +28,7 @@ API_URL = os.environ.get("AUTH_ENDPOINT_URL", "http://localhost:8000")
 if st.button("Switch to Query Editor", key="switch-to-query-editor"):
     st.switch_page("pages/Query.py")
 
-alt.themes.enable("dark")  # Enable dark theme
+# alt.themes.enable("dark")
 
 # Initialize the activity log
 activity_log = deque(maxlen=100)
