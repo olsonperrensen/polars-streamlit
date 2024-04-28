@@ -186,6 +186,12 @@ def app():
                 color_axis = st.selectbox("Color axis", selected_columns)
                 interactive_plot = st.checkbox("Interactive Plot", value=True)
 
+            removed_columns = st.multiselect(
+                "Select columns to remove from dataframe",
+                selected_columns,
+                default=[],
+            )
+
             graph_type = st.selectbox(
                 "Select Graph Type", ["3D Plot", "Heatmap", "Line Chart", "Dataframe"]
             )
@@ -213,6 +219,7 @@ def app():
             with tab:
                 if st.session_state.steps:
                     last_step = st.session_state.steps[-1]
+                    last_step["removed_columns"] = removed_columns
                     # Send a request to the backend with the collected steps
                     response = requests.post(
                         f"{API_URL}/{graph_type.lower().replace(' ', '_')}",
@@ -230,6 +237,8 @@ def app():
                             chart_spec = json.loads(response.json())
                             chart = alt.Chart.from_dict(chart_spec)
                             st.altair_chart(chart, use_container_width=True)
+                        elif graph_type == "Dataframe":
+                            st.data_editor(response.json(), width=1280, height=720)
                         log_activity(
                             f"Displayed interactive {graph_type.lower()} for {last_step['parquet_url']}"
                         )
@@ -240,11 +249,6 @@ def app():
                         )
 
         if graph_type:
-            removed_columns = st.multiselect(
-                "Select columns to remove from dataframe",
-                selected_columns,
-                default=[],
-            )
             render_plot(graph_type, result_tab)
 
         # About/Help section
