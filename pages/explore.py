@@ -11,7 +11,7 @@ import pytz
 import os
 import re
 from icecream import ic
-from streamlit_app import logged_in
+from app import logged_in
 
 # Set page configuration
 st.set_page_config(

@@ -1,7 +1,13 @@
-### run frontend using the following command : 
-#### python -m streamlit run streamlit_app.py
-#### OR visit: https://hk3lab.streamlit.app/
+---
+title: Hk3lab
+emoji: 🌍
+colorFrom: indigo
+colorTo: indigo
+sdk: streamlit
+sdk_version: 1.33.0
+app_file: app.py
+pinned: false
+license: mit
+---
 
-### run backend using the following command : 
-#### python -m uvicorn --reload main:app
-#### OR visit: https://hk3lab-453d34fae384.herokuapp.com/
+Check out the configuration reference at https://huggingface.co/docs/hub/spaces-config-reference

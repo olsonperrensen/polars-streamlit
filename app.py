@@ -21,7 +21,7 @@ def logged_in():
 
 show_pages(
     [
-        Page("streamlit_app.py", "", ""),
+        Page("app.py", "", ""),
         Page("pages/About.py", "About", "🚩"),
         Page("pages/Explore.py", "Explore", "📈"),
         Page("pages/Query.py", "Query", "📅"),

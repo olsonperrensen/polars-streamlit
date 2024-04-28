@@ -7,7 +7,7 @@ import pandas as pd
 import re
 import tempfile
 import subprocess
-from streamlit_app import logged_in
+from app import logged_in
 
 if not logged_in():
     st.warning("Authenticate")

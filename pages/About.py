@@ -1,5 +1,5 @@
 import streamlit as st
-from streamlit_app import logged_in
+from app import logged_in
 
 if not logged_in():
     st.warning("Authenticate")
