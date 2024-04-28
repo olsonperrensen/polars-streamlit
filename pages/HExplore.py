@@ -12,10 +12,9 @@ import re
 from icecream import ic
 from app import logged_in
 
-# Set page configuration
 st.set_page_config(
-    page_title="EEG Data Explorer",
-    page_icon="📈",
+    page_title="PolarSpace",
+    page_icon="🌌",
     layout="wide",
 )
 

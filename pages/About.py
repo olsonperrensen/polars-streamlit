@@ -2,8 +2,8 @@ import streamlit as st
 from app import logged_in
 
 st.set_page_config(
-    page_title="EEG About Page",
-    page_icon="🚩",
+    page_title="PolarSpace",
+    page_icon="🌌",
     layout="wide",
 )
 

@@ -8,8 +8,8 @@ import subprocess
 from app import logged_in
 
 st.set_page_config(
-    page_title="EEG Query Editor",
-    page_icon="⚙️",
+    page_title="PolarSpace",
+    page_icon="🌌",
     layout="wide",
 )
 
