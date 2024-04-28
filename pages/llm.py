@@ -11,6 +11,13 @@ from streamlit_extras.app_logo import add_logo
 from streamlit_extras.badges import badge
 from streamlit_extras.capture import example_logcapture, example_stdout, example_stderr
 from streamlit_extras.card import card
+from streamlit_extras.chart_container import example_two
+from streamlit_extras.customize_running import center_running
+
+click = st.button("Observe where the 🏃‍♂️ running widget is now!")
+if click:
+    center_running()
+    time.sleep(2)
 
 
 badge(type="pypi", name="plost")
@@ -59,6 +66,8 @@ def example_one():
 
 
 example_one()
+
+example_two()
 
 
 def example():
