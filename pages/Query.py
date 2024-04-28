@@ -6,6 +6,7 @@ import pandas as pd
 import tempfile
 import subprocess
 from app import logged_in, render_footer
+import time
 
 st.set_page_config(
     page_title="PolarSpace",
@@ -14,7 +15,9 @@ st.set_page_config(
 )
 
 if not logged_in():
-    st.warning("Authenticate")
+    s = st.warning("Authenticate")
+    time.sleep(0.7)
+    s.empty()
     st.stop()
 
 API_URL = os.environ.get("AUTH_ENDPOINT_URL", "http://localhost:8000")

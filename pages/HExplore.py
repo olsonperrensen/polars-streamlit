@@ -19,7 +19,9 @@ st.set_page_config(
 )
 
 if not logged_in():
-    st.warning("Authenticate")
+    s = st.warning("Authenticate")
+    time.sleep(0.7)
+    s.empty()
     st.stop()
 
 # Set the API endpoint URL
