@@ -1,13 +1,8 @@
 streamlit
-pandas
 altair
 plotly
-polars
-python-multipart
 st_pages
-pip
 icecream
-streamlit-modal
 black
 trycourier==4.4.0
 argon2-cffi
