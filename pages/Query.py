@@ -1,10 +1,8 @@
-import random
 import streamlit as st
 import requests
 import json
 import os
 import pandas as pd
-import re
 import tempfile
 import subprocess
 from app import logged_in
