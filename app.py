@@ -29,7 +29,7 @@ show_pages(
     [
         Page("app.py", "", ""),
         Page("pages/About.py", "About", "🚩"),
-        Page("pages/Explore.py", "Explore", "📈"),
+        Page("pages/HExplore.py", "HExplore", "📈"),
         Page("pages/Query.py", "Query", "📅"),
     ]
 )
