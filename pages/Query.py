@@ -7,6 +7,12 @@ import tempfile
 import subprocess
 from app import logged_in
 
+st.set_page_config(
+    page_title="EEG Query Editor",
+    page_icon="⚙️",
+    layout="wide",
+)
+
 if not logged_in():
     st.warning("Authenticate")
     st.stop()
@@ -93,11 +99,6 @@ def send_python_code(python_code, selected_libraries, selected_actions):
 
 
 def main():
-    st.set_page_config(
-        page_title="EEG Query Editor",
-        page_icon="⚙️",
-        layout="wide",
-    )
     st.title("Query Editor")
 
     col1, col2 = st.columns(2)

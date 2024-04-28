@@ -1,5 +1,12 @@
+import streamlit as st
 from st_pages import show_pages, Page
 from streamlit_login_auth_ui.widgets import __login__
+
+st.set_page_config(
+    page_title="EEG Dashboard",
+    page_icon="💉",
+    layout="wide",
+)
 
 
 def logged_in():
