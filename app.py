@@ -6,6 +6,12 @@ st.set_page_config(
     page_title="PolarSpace",
     page_icon="🌌",
     layout="wide",
+    initial_sidebar_state="expanded",
+    menu_items={
+        "Get help": "https://hk3lab.ai",
+        "Report a bug": "https://github.com/olsonperrensen/polars-streamlit/issues",
+        "About": "![image](https://hk3lab.ai/wp-content/uploads/2020/02/cropped-cropped-hk3lab-3.png) 2024 © HK3 Lab S.r.l. Via Parteli 19 38068 Rovereto (TN) - Italy - PI/CF 02572270227",
+    },
 )
 
 
