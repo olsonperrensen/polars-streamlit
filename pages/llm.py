@@ -29,7 +29,7 @@ def log_o():
 
     if st.checkbox("Use url", value=True):
 
-        add_logo("https://u.cubeupload.com/olsonperrensen2/polarslogo.jpg", height=200)
+        add_logo("assets/polarspace.png")
 
     else:
 
