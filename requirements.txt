@@ -7,3 +7,6 @@ requests
 pyarrow
 kaleido
 black
+sqlalchemy
+psycopg2-binary
+psycopg2

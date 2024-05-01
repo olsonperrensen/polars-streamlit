@@ -9,8 +9,28 @@ import sys
 from io import StringIO
 import requests
 import pandas as pd
+from sqlalchemy import create_engine, Column, Integer, String
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import sessionmaker
 
 app = FastAPI()
+
+# Database configuration
+DATABASE_URL = "sqlite:///./code_snippets.db"
+engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False})
+SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+Base = declarative_base()
+
+
+# Database model
+class CodeSnippet(Base):
+    __tablename__ = "code_snippets"
+
+    id = Column(Integer, primary_key=True, index=True)
+    code_body = Column(String)
+
+
+Base.metadata.create_all(bind=engine)
 
 # Set the root directory
 root_dir = "data\\A\\B"
@@ -199,7 +219,14 @@ def heatmap(request: PlotRequest):
 @app.post("/execute_python")
 async def execute_python(code_body: CodeBody):
     try:
-        # Send a GET request to the remote FastAPI server
+        # Save the code body to the database
+        db = SessionLocal()
+        code_snippet = CodeSnippet(code_body=code_body.python_code)
+        db.add(code_snippet)
+        db.commit()
+        db.refresh(code_snippet)
+
+        # Send a POST request to the remote FastAPI server
         response = requests.post(f"{REMOTE_SERVER_URL}/", json=code_body.dict())
         response.raise_for_status()  # Raise an exception if the request failed
 
@@ -208,6 +235,8 @@ async def execute_python(code_body: CodeBody):
     except requests.exceptions.RequestException as e:
         # Handle any exceptions that occurred during the request
         return {"error": str(e)}
+    finally:
+        db.close()
 
 
 @app.post("/line_chart")
