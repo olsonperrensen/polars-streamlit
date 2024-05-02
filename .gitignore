@@ -1,7 +1,6 @@
-.parquet
 *.parquet
 *.csv
-.csv
+*.env
 # Byte-compiled / optimized Python files
 __pycache__/
 *.pyc

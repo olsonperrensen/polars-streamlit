@@ -10,3 +10,4 @@ black
 sqlalchemy
 psycopg2-binary
 psycopg2
+python-dotenv

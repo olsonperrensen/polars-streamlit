@@ -1,7 +1,4 @@
 from fastapi import FastAPI
-from sqlalchemy import create_engine
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker
 from routers import (
     health,
     patients,
@@ -25,12 +22,6 @@ app.include_router(plots.router)
 app.include_router(dataframe.router)
 app.include_router(execute_python.router)
 
-Base.metadata.create_all(bind=engine)
-
-DATABASE_URL = "sqlite:///./code_snippets.db"
-engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False})
-SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-Base = declarative_base()
 
 
 Base.metadata.create_all(bind=engine)
