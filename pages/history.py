@@ -1,7 +1,8 @@
 import streamlit as st
 import requests
+import os
 
-API_URL = "http://localhost:8000"  # Replace with your FastAPI backend URL
+API_URL = os.environ.get("AUTH_ENDPOINT_URL", "http://localhost:8000")
 
 def remove_history_item(idx):
     response = requests.delete(f"{API_URL}/history/{idx}")
