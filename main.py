@@ -8,6 +8,7 @@ from routers import (
     plots,
     dataframe,
     execute_python,
+    history
 )
 from database import engine, Base
 
@@ -21,6 +22,7 @@ app.include_router(column_names.router)
 app.include_router(plots.router)
 app.include_router(dataframe.router)
 app.include_router(execute_python.router)
+app.include_router(history.router)
 
 
 
