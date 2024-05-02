@@ -22,6 +22,17 @@ if not logged_in():
 
 API_URL = os.environ.get("AUTH_ENDPOINT_URL", "http://localhost:8000")
 
+def fetch_history():
+    try:
+        response = requests.get(f"{API_URL}/history")
+        if response.status_code == 200:
+            return response.json()
+        else:
+            st.error(f"Failed to fetch history: {response.text}")
+            return []
+    except requests.exceptions.RequestException as e:
+        st.error(f"Error fetching history: {str(e)}")
+        return []
 
 def get_action_code(action):
     if action == "Data Loading":
@@ -92,6 +103,8 @@ def send_python_code(python_code, selected_libraries, selected_actions):
             timeout=120,
         )
         if response.status_code == 200:
+            if "history" not in st.session_state:
+             st.session_state.history = fetch_history()
             return response.json()
         else:
             return response.text
