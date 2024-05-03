@@ -3,12 +3,14 @@ _secret_auth_.json
 *.parquet
 *.csv
 .csv
+secrets.toml
 # Byte-compiled / optimized Python files
 __pycache__/
 .devcontainer/
 *.pyc
 *.pyo
 *.pyd
+*.env
 
 # Virtual environment
 venv/

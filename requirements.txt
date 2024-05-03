@@ -9,3 +9,5 @@ argon2-cffi
 streamlit-login-auth-ui
 streamlit-extras
 streamlit-vertical-slider
+chat2plot
+python-dotenv

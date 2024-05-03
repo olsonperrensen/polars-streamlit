@@ -85,6 +85,7 @@ show_pages(
         Page("pages/HExplore.py", "Explore", "📈"),
         Page("pages/Query.py", "Query", "📅"),
         Page("pages/llm.py", "Experiment", "🦄"),
+        Page("pages/openapi.py", "OPENAPI", "🐲"),
         Page("pages/history.py", "History", "🦜"),
     ]
 )
