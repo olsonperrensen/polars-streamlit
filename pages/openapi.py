@@ -1,74 +1,106 @@
 import streamlit as st
+import replicate
 import os
-from openai import OpenAI
-import altair as alt
-import json
-import pandas as pd
+from transformers import AutoTokenizer
 
+# # Assuming you have a specific tokenizers for Llama; if not, use an appropriate one like this
+# tokenizer = AutoTokenizer.from_pretrained("allenai/llama")
 
-# Set up OpenAI client
-client = OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
+# text = "Example text to tokenize."
+# tokens = tokenizer.tokenize(text)
+# num_tokens = len(tokens)
 
-# Define function to generate visualization specification from natural language prompt
-@st.cache_data
-def generate_visualization_spec(prompt, data, model_name="gpt-3.5-turbo"):
-    chat_completion = client.chat.completions.create(
-        messages=[
-            {"role": "system", "content": "You are a visualization assistant that generates JSON specifications for charts based on natural language prompts and provided data."},
-            {"role": "user", "content": f"Data: {data}\n\nPrompt: {prompt}"},
-        ],
-        model=model_name,
-        temperature=0.7,
-        max_tokens=1024,
-    )
-    return chat_completion.choices[0].message.content
+# print("Number of tokens:", num_tokens)
 
-# Define function to render visualization from JSON specification
-def render_visualization(spec_json):
-    spec = json.loads(spec_json)
-    if "chart_type" in spec:
-        chart_type = spec["chart_type"]
-        data = pd.DataFrame(spec["data"])
+# Set assistant icon to Snowflake logo
+icons = {"assistant": "❄️", "user": "⛷️"}
 
-        if chart_type == "bar":
-            x = spec["x"]
-            y = spec["y"]
-            sort_order = spec.get("sort_order", None)
-            tooltip = spec.get("tooltip", None)
+# App title
+st.set_page_config(page_title="Snowflake Arctic")
 
-            chart = alt.Chart(data).mark_bar().encode(
-                x=alt.X(x, title=spec.get("x_title", x)),
-                y=alt.Y(y, title=spec.get("y_title", y), sort=sort_order),
-                tooltip=tooltip
-            )
-        else:
-            # Add support for other chart types here
-            st.warning(f"Chart type '{chart_type}' is not supported.")
-            return
+# Replicate Credentials
+with st.sidebar:
+    st.title('Snowflake Arctic')
+    if 'REPLICATE_API_TOKEN' in st.secrets:
+        #st.success('API token loaded!', icon='✅')
+        replicate_api = st.secrets['REPLICATE_API_TOKEN']
     else:
-        st.warning("Invalid chart specification format.")
-        return
+        replicate_api = st.text_input('Enter Replicate API token:', type='password')
+        if not (replicate_api.startswith('r8_') and len(replicate_api)==40):
+            st.warning('Please enter your Replicate API token.', icon='⚠️')
+            st.markdown("**Don't have an API token?** Head over to [Replicate](https://replicate.com) to sign up for one.")
+        #else:
+        #    st.success('API token loaded!', icon='✅')
 
-    return st.altair_chart(chart, use_container_width=True)
+    os.environ['REPLICATE_API_TOKEN'] = replicate_api
+    st.subheader("Adjust model parameters")
+    temperature = st.sidebar.slider('temperature', min_value=0.01, max_value=5.0, value=0.3, step=0.01)
+    top_p = st.sidebar.slider('top_p', min_value=0.01, max_value=1.0, value=0.9, step=0.01)
 
+# Store LLM-generated responses
+if "messages" not in st.session_state.keys():
+    st.session_state.messages = [{"role": "assistant", "content": "Hi. I'm Arctic, a new, efficient, intelligent, and truly open language model created by Snowflake AI Research. Ask me anything."}]
 
-# Streamlit app
-def main():
-    st.title("Chat2Plot")
-    st.write("Enter a natural language prompt and upload data to generate a visualization.")
+# Display or clear chat messages
+for message in st.session_state.messages:
+    with st.chat_message(message["role"], avatar=icons[message["role"]]):
+        st.write(message["content"])
 
-    prompt = st.text_area("Prompt","Create a bar chart showing the total sales for each product category across all regions in the year 2022. Sort the categories in descending order of sales, and include data labels displaying the sales value for each category.")
-    data = st.file_uploader("Upload data", type=["csv", "json"])
+def clear_chat_history():
+    st.session_state.messages = [{"role": "assistant", "content": "Hi. I'm Arctic, a new, efficient, intelligent, and truly open language model created by Snowflake AI Research. Ask me anything."}]
+st.sidebar.button('Clear chat history', on_click=clear_chat_history)
 
-    if data is not None:
-        data_content = data.getvalue().decode("utf-8")
+st.sidebar.caption('Built by [Snowflake](https://snowflake.com/) to demonstrate [Snowflake Arctic](https://www.snowflake.com/blog/arctic-open-and-efficient-foundation-language-models-snowflake).')
 
-    if prompt and data:
-        with st.spinner("Generating visualization specification..."):
-            visualization_spec = generate_visualization_spec(prompt, data_content)
-        st.write("Generated visualization specification:")
-        st.code(visualization_spec, language="json")
-        render_visualization(visualization_spec)
+@st.cache_resource(show_spinner=False)
+def get_tokenizer():
+    """Get a tokenizer to make sure we're not sending too much text
+    text to the Model. Eventually we will replace this with ArcticTokenizer
+    """
+    return AutoTokenizer.from_pretrained("huggyllama/llama-7b")
 
-if __name__ == "__main__":
-    main()
+def get_num_tokens(prompt):
+    """Get the number of tokens in a given prompt"""
+    tokenizer = get_tokenizer()
+    tokens = tokenizer.tokenize(prompt)
+    return len(tokens)
+
+# Function for generating Snowflake Arctic response
+def generate_arctic_response():
+    prompt = []
+    for dict_message in st.session_state.messages:
+        if dict_message["role"] == "user":
+            prompt.append("<|im_start|>user\n" + dict_message["content"] + "<|im_end|>")
+        else:
+            prompt.append("<|im_start|>assistant\n" + dict_message["content"] + "<|im_end|>")
+    
+    prompt.append("<|im_start|>assistant")
+    prompt.append("")
+    prompt_str = "\n".join(prompt)
+    
+    if get_num_tokens(prompt_str) >= 3072:
+        st.error("Conversation length too long. Please keep it under 3072 tokens.")
+        st.button('Clear chat history', on_click=clear_chat_history, key="clear_chat_history")
+        st.stop()
+
+    for event in replicate.stream("snowflake/snowflake-arctic-instruct",
+                           input={"prompt": prompt_str,
+                                  "prompt_template": r"{prompt}",
+                                  "temperature": temperature,
+                                  "top_p": top_p,
+                                  }):
+        yield str(event)
+
+# User-provided prompt
+if prompt := st.chat_input(disabled=not replicate_api):
+    st.session_state.messages.append({"role": "user", "content": prompt})
+    with st.chat_message("user", avatar="⛷️"):
+        st.write(prompt)
+
+# Generate a new response if last message is not from assistant
+if st.session_state.messages[-1]["role"] != "assistant":
+    with st.chat_message("assistant", avatar="❄️"):
+        response = generate_arctic_response()
+        full_response = st.write_stream(response)
+    message = {"role": "assistant", "content": full_response}
+    st.session_state.messages.append(message)
