@@ -13,3 +13,4 @@ replicate
 python-dotenv
 chat2plot
 langchain-community
+transformers
