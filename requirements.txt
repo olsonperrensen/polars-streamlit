@@ -10,6 +10,5 @@ streamlit-login-auth-ui
 streamlit-extras
 streamlit-vertical-slider
 replicate
-transformers
 python-dotenv
-torch
+chat2plot

@@ -1,106 +1,143 @@
-import streamlit as st
-import replicate
+import json
+import logging
 import os
-from transformers import AutoTokenizer
+import subprocess
+import sys
+import time
+import traceback
 
-# # Assuming you have a specific tokenizers for Llama; if not, use an appropriate one like this
-# tokenizer = AutoTokenizer.from_pretrained("allenai/llama")
+import pandas as pd
+import streamlit as st
+from plotly.graph_objs import Figure
+from pydantic import BaseModel
+from streamlit_chat import message
+from chat2plot import ResponseType, chat2plot
+from chat2plot.chat2plot import Chat2Vega
 
-# text = "Example text to tokenize."
-# tokens = tokenizer.tokenize(text)
-# num_tokens = len(tokens)
+sys.path.append("../../")
 
-# print("Number of tokens:", num_tokens)
+# From here down is all the StreamLit UI.
+st.set_page_config(page_title="Chat2Plot Demo", page_icon=":robot:", layout="wide")
+st.header("Chat2Plot Demo")
 
-# Set assistant icon to Snowflake logo
-icons = {"assistant": "❄️", "user": "⛷️"}
 
-# App title
-st.set_page_config(page_title="Snowflake Arctic")
+def initialize_logger():
+    logger = logging.getLogger("root")
+    handler = logging.StreamHandler(sys.stdout)
+    logger.setLevel(logging.INFO)
+    logger.handlers = [handler]
+    return True
 
-# Replicate Credentials
-with st.sidebar:
-    st.title('Snowflake Arctic')
-    if 'REPLICATE_API_TOKEN' in st.secrets:
-        #st.success('API token loaded!', icon='✅')
-        replicate_api = st.secrets['REPLICATE_API_TOKEN']
-    else:
-        replicate_api = st.text_input('Enter Replicate API token:', type='password')
-        if not (replicate_api.startswith('r8_') and len(replicate_api)==40):
-            st.warning('Please enter your Replicate API token.', icon='⚠️')
-            st.markdown("**Don't have an API token?** Head over to [Replicate](https://replicate.com) to sign up for one.")
-        #else:
-        #    st.success('API token loaded!', icon='✅')
 
-    os.environ['REPLICATE_API_TOKEN'] = replicate_api
-    st.subheader("Adjust model parameters")
-    temperature = st.sidebar.slider('temperature', min_value=0.01, max_value=5.0, value=0.3, step=0.01)
-    top_p = st.sidebar.slider('top_p', min_value=0.01, max_value=1.0, value=0.9, step=0.01)
+if "logger" not in st.session_state:
+    st.session_state["logger"] = initialize_logger()
 
-# Store LLM-generated responses
-if "messages" not in st.session_state.keys():
-    st.session_state.messages = [{"role": "assistant", "content": "Hi. I'm Arctic, a new, efficient, intelligent, and truly open language model created by Snowflake AI Research. Ask me anything."}]
+api_key = st.secrets["OPENAI_API_KEY"]
+csv_file = st.file_uploader("Step2: Upload csv file", type={"csv"})
 
-# Display or clear chat messages
-for message in st.session_state.messages:
-    with st.chat_message(message["role"], avatar=icons[message["role"]]):
-        st.write(message["content"])
+if api_key and csv_file:
+    os.environ["OPENAI_API_KEY"] = api_key
 
-def clear_chat_history():
-    st.session_state.messages = [{"role": "assistant", "content": "Hi. I'm Arctic, a new, efficient, intelligent, and truly open language model created by Snowflake AI Research. Ask me anything."}]
-st.sidebar.button('Clear chat history', on_click=clear_chat_history)
+    df = pd.read_csv(csv_file)
 
-st.sidebar.caption('Built by [Snowflake](https://snowflake.com/) to demonstrate [Snowflake Arctic](https://www.snowflake.com/blog/arctic-open-and-efficient-foundation-language-models-snowflake).')
+    st.write(df.head())
 
-@st.cache_resource(show_spinner=False)
-def get_tokenizer():
-    """Get a tokenizer to make sure we're not sending too much text
-    text to the Model. Eventually we will replace this with ArcticTokenizer
-    """
-    return AutoTokenizer.from_pretrained("huggyllama/llama-7b")
+    if "generated" not in st.session_state:
+        st.session_state["generated"] = []
 
-def get_num_tokens(prompt):
-    """Get the number of tokens in a given prompt"""
-    tokenizer = get_tokenizer()
-    tokens = tokenizer.tokenize(prompt)
-    return len(tokens)
+    if "past" not in st.session_state:
+        st.session_state["past"] = []
 
-# Function for generating Snowflake Arctic response
-def generate_arctic_response():
-    prompt = []
-    for dict_message in st.session_state.messages:
-        if dict_message["role"] == "user":
-            prompt.append("<|im_start|>user\n" + dict_message["content"] + "<|im_end|>")
-        else:
-            prompt.append("<|im_start|>assistant\n" + dict_message["content"] + "<|im_end|>")
-    
-    prompt.append("<|im_start|>assistant")
-    prompt.append("")
-    prompt_str = "\n".join(prompt)
-    
-    if get_num_tokens(prompt_str) >= 3072:
-        st.error("Conversation length too long. Please keep it under 3072 tokens.")
-        st.button('Clear chat history', on_click=clear_chat_history, key="clear_chat_history")
-        st.stop()
+    st.subheader("Chat")
 
-    for event in replicate.stream("snowflake/snowflake-arctic-instruct",
-                           input={"prompt": prompt_str,
-                                  "prompt_template": r"{prompt}",
-                                  "temperature": temperature,
-                                  "top_p": top_p,
-                                  }):
-        yield str(event)
+    def initialize_c2p():
+        st.session_state["chat"] = chat2plot(
+            df,
+            st.session_state["chart_format"],
+            verbose=True,
+            description_strategy="head",
+            language="english",
+        )
 
-# User-provided prompt
-if prompt := st.chat_input(disabled=not replicate_api):
-    st.session_state.messages.append({"role": "user", "content": prompt})
-    with st.chat_message("user", avatar="⛷️"):
-        st.write(prompt)
+    def reset_history():
+        initialize_c2p()
+        st.session_state["generated"] = []
+        st.session_state["past"] = []
 
-# Generate a new response if last message is not from assistant
-if st.session_state.messages[-1]["role"] != "assistant":
-    with st.chat_message("assistant", avatar="❄️"):
-        response = generate_arctic_response()
-        full_response = st.write_stream(response)
-    message = {"role": "assistant", "content": full_response}
-    st.session_state.messages.append(message)
+    with st.sidebar:
+        chart_format = st.selectbox(
+            "Chart format",
+            ("simple", "vega"),
+            key="chart_format",
+            index=0,
+            on_change=initialize_c2p,
+        )
+
+        st.button("Reset conversation history", on_click=reset_history)
+
+    if "chat" not in st.session_state:
+        initialize_c2p()
+
+    c2p = st.session_state["chat"]
+
+    chat_container = st.container()
+    input_container = st.container()
+
+    def submit():
+        submit_text = st.session_state["input"]
+        st.session_state["input"] = ""
+        with st.spinner(text="Wait for LLM response..."):
+            try:
+                if isinstance(c2p, Chat2Vega):
+                    res = c2p(submit_text, config_only=True)
+                else:
+                    res = c2p(submit_text, config_only=False, show_plot=False)
+            except Exception:
+                res = traceback.format_exc()
+        st.session_state.past.append(submit_text)
+        st.session_state.generated.append(res)
+
+    def get_text():
+        input_text = st.text_input("You: ", key="input", on_change=submit)
+        return input_text
+
+    with input_container:
+        user_input = get_text()
+
+    if st.session_state["generated"]:
+        with chat_container:
+            for i in range(
+                len(st.session_state["generated"])
+            ):  # range(len(st.session_state["generated"]) - 1, -1, -1):
+                message(st.session_state["past"][i], is_user=True, key=str(i) + "_user")
+
+                res = st.session_state["generated"][i]
+
+                if isinstance(res, str):
+                    # something went wrong
+                    st.error(res.replace("\n", "\n\n"))
+                elif res.response_type == ResponseType.SUCCESS:
+                    message(res.explanation, key=str(i))
+
+                    col1, col2 = st.columns([2, 1])
+
+                    with col2:
+                        config = res.config
+                        if isinstance(config, BaseModel):
+                            st.code(
+                                config.model_dump_json(indent=2, exclude_none=True),
+                                language="json",
+                            )
+                        else:
+                            st.code(json.dumps(config, indent=2), language="json")
+                    with col1:
+                        if isinstance(res.figure, Figure):
+                            st.plotly_chart(res.figure, use_container_width=True)
+                        else:
+                            st.vega_lite_chart(df, res.config, use_container_width=True)
+                else:
+                    st.warning(
+                        f"Failed to render chart. last message: {res.conversation_history[-1].content}",
+                        icon="⚠️",
+                    )
+                    # message(res.conversation_history[-1].content, key=str(i))
