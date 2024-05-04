@@ -12,3 +12,4 @@ streamlit-vertical-slider
 replicate
 python-dotenv
 chat2plot
+langchain-community
