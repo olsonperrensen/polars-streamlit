@@ -12,6 +12,6 @@ async def upload_parquet(file: UploadFile = File(...)):
     df = pl.read_parquet(BytesIO(parquet_file))
 
     # Convert the DataFrame to JSON
-    json_data = df.write_json(pretty=True)
+    json_data = df.to_pandas(use_pyarrow_extension_array=True).to_json()
 
     return {"data": json_data}
