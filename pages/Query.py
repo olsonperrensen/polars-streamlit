@@ -6,10 +6,11 @@ import pandas as pd
 import tempfile
 import subprocess
 from app import init_page_ui, logged_in, render_footer
+from streamlit_extras.customize_running import center_running
 import time
 
 init_page_ui()
-
+center_running()
 
 if not logged_in():
     s = st.warning("Authenticate")

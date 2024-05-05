@@ -10,9 +10,11 @@ from streamlit_chat import message
 from app import init_page_ui
 from chat2plot import ResponseType, chat2plot
 from chat2plot.chat2plot import Chat2Vega
+from streamlit_extras.customize_running import center_running
+
 
 init_page_ui()
-
+center_running()
 
 st.header("Chat2Plot Demo")
 

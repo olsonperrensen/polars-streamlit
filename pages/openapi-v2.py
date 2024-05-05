@@ -3,9 +3,10 @@ import replicate
 import os
 from transformers import AutoTokenizer
 from app import init_page_ui
+from streamlit_extras.customize_running import center_running
 
 init_page_ui()
-
+center_running()
 # # Assuming you have a specific tokenizers for Llama; if not, use an appropriate one like this
 # tokenizer = AutoTokenizer.from_pretrained("allenai/llama")
 

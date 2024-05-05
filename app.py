@@ -3,6 +3,7 @@ import streamlit as st
 from st_pages import show_pages, Page
 from streamlit_login_auth_ui.widgets import __login__
 from streamlit_extras.badges import badge
+from streamlit_extras.customize_running import center_running
 
 
 def init_page_ui():
@@ -23,6 +24,7 @@ def init_page_ui():
 
 
 init_page_ui()
+center_running()
 
 
 def logged_in():
@@ -94,9 +96,9 @@ show_pages(
         Page("pages/About.py", "HK3lab", "🌇"),
         Page("pages/HExplore.py", "Explore", "📈"),
         Page("pages/Query.py", "Query", "📅"),
-        Page("pages/llm.py", "Experiment", "🦄"),
         Page("pages/openapi.py", "Chat2Plot", "🦜"),
         Page("pages/openapi-v2.py", "OPENAPIv2", "🐉"),
+        Page("pages/coming-soon.py", "Coming-Soon", "🦄"),
     ]
 )
 st.title("🌟 Welcome to PolarSpace! 🌌")

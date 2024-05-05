@@ -11,8 +11,11 @@ import os
 import re
 from icecream import ic
 from app import init_page_ui, logged_in, render_footer
+from streamlit_extras.customize_running import center_running
+
 
 init_page_ui()
+center_running()
 
 if not logged_in():
     s = st.warning("Authenticate")
