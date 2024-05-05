@@ -7,13 +7,13 @@ from argon2 import PasswordHasher
 import requests
 import streamlit as st
 from passlib.context import CryptContext
-
+from icecream import ic
 
 ph = PasswordHasher()
 API_URL = os.environ.get("AUTH_ENDPOINT_URL", "http://localhost:8000")
 
 
-def check_usr_pass(username: str, password: str) -> bool:
+def check_usr_pass(username: str, password: str):
     """
     Authenticates the username and password using the FastAPI backend.
     """
@@ -23,10 +23,15 @@ def check_usr_pass(username: str, password: str) -> bool:
 
     if response.status_code == 200:
         token_data = response.json()
+        print(f"reached backend /gen_token with as res: {token_data}")
         access_token = token_data["access_token"]
+        ic(f"giving access_token as part of st.session_state... : {access_token}")
         # Store the access token in a secure way (e.g., session state or secure cookie)
         st.session_state.access_token = access_token
-        return True
+        ic(
+            f"{st.session_state.access_token} has been given successfully to st.session_state.access_token"
+        )
+        return access_token
     else:
         return False
 
