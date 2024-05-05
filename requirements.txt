@@ -12,3 +12,5 @@ psycopg2-binary
 psycopg2
 python-dotenv
 python-multipart
+python-jose[cryptography] 
+passlib[bcrypt]

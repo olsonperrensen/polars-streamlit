@@ -1,4 +1,4 @@
-from fastapi import FastAPI
+from fastapi import Depends, FastAPI
 from routers import (
     health,
     patients,
@@ -11,22 +11,27 @@ from routers import (
     history,
     upload_parquet,
     packages_list,
+    login,
+    register,
 )
 from database import engine, Base
+from auth import get_current_user
 
 app = FastAPI()
 
-app.include_router(health.router)
-app.include_router(patients.router)
-app.include_router(data_types.router)
-app.include_router(parquet_files.router)
-app.include_router(column_names.router)
-app.include_router(plots.router)
-app.include_router(dataframe.router)
-app.include_router(execute_python.router)
-app.include_router(history.router)
-app.include_router(upload_parquet.router)
-app.include_router(packages_list.router)
+app.include_router(health.router, dependencies=[Depends(get_current_user)])
+app.include_router(patients.router, dependencies=[Depends(get_current_user)])
+app.include_router(data_types.router, dependencies=[Depends(get_current_user)])
+app.include_router(parquet_files.router, dependencies=[Depends(get_current_user)])
+app.include_router(column_names.router, dependencies=[Depends(get_current_user)])
+app.include_router(plots.router, dependencies=[Depends(get_current_user)])
+app.include_router(dataframe.router, dependencies=[Depends(get_current_user)])
+app.include_router(execute_python.router, dependencies=[Depends(get_current_user)])
+app.include_router(history.router, dependencies=[Depends(get_current_user)])
+app.include_router(upload_parquet.router, dependencies=[Depends(get_current_user)])
+app.include_router(packages_list.router, dependencies=[Depends(get_current_user)])
+app.include_router(login.router, dependencies=None)
+app.include_router(register.router, dependencies=None)
 
 
 Base.metadata.create_all(bind=engine)
