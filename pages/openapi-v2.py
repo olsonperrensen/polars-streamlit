@@ -15,9 +15,6 @@ from transformers import AutoTokenizer
 # Set assistant icon to Snowflake logo
 icons = {"assistant": "❄️", "user": "⛷️"}
 
-# App title
-st.set_page_config(page_title="Snowflake Arctic")
-
 # Replicate Credentials
 with st.sidebar:
     st.title('Snowflake Arctic')

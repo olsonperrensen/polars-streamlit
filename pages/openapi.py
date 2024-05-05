@@ -1,7 +1,5 @@
 import json
-import logging
 import os
-import sys
 import traceback
 
 import pandas as pd
@@ -12,23 +10,9 @@ from streamlit_chat import message
 from chat2plot import ResponseType, chat2plot
 from chat2plot.chat2plot import Chat2Vega
 
-sys.path.append("../../")
 
-# From here down is all the StreamLit UI.
-st.set_page_config(page_title="Chat2Plot Demo", page_icon=":robot:", layout="wide")
 st.header("Chat2Plot Demo")
 
-
-def initialize_logger():
-    logger = logging.getLogger("root")
-    handler = logging.StreamHandler(sys.stdout)
-    logger.setLevel(logging.INFO)
-    logger.handlers = [handler]
-    return True
-
-
-if "logger" not in st.session_state:
-    st.session_state["logger"] = initialize_logger()
 
 api_key = st.secrets["OPENAI_API_KEY"]
 csv_file = st.file_uploader("Step2: Upload csv file", type={"csv"})

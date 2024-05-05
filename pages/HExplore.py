@@ -12,12 +12,6 @@ import re
 from icecream import ic
 from app import logged_in, render_footer
 
-st.set_page_config(
-    page_title="PolarSpace",
-    page_icon="🌌",
-    layout="wide",
-)
-
 if not logged_in():
     s = st.warning("Authenticate")
     time.sleep(0.7)
