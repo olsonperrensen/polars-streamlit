@@ -1,6 +1,7 @@
 import streamlit as st
 from st_pages import show_pages, Page
 from streamlit_login_auth_ui.widgets import __login__
+from streamlit_extras.badges import badge
 
 
 def init_page_ui():
@@ -102,9 +103,9 @@ st.title("🌟 Welcome to PolarSpace! 🌌")
 st.write(
     "PolarSpace is a powerful and intuitive web application that empowers users to explore, analyze, and visualize data using the Polars library and Streamlit framework. 📊📈"
 )
-feature_tabs = st.tabs(["🎯 Features"])
+feature_tabs, lib_used = st.tabs(["🎯 Features", "👏 Credits"])
 
-with feature_tabs[0]:
+with feature_tabs:
     col1, col2, col3 = st.columns(3)
     col4, col5, col6 = st.columns(3)
     col7, col8, col9 = st.columns(3)
@@ -192,5 +193,33 @@ with st.expander("🎓A final word"):
         "PolarSpace is continuously evolving to provide an even better user experience. Get ready to unleash the power of data analysis and visualization with PolarSpace. Happy data-ing! 🌠💫"
     )
 
+
+def read_requirements(file_path):
+    with open(file_path, "r") as file:
+        packages = file.readlines()
+    return [pkg.strip() for pkg in packages]
+
+
+with lib_used:
+    requirements_file = "requirements.txt"
+    packages = read_requirements(requirements_file)
+    st.subheader("Third-Party Libraries Used")
+    col1, col2 = st.columns(2)
+
+    # Calculate the middle index to split the packages into two halves
+    mid = len(packages) // 2
+
+    with col1:
+        for pkg in packages[:mid]:
+            st.write(pkg)
+            badge(type="pypi", name=f"{pkg}")
+
+    with col2:
+        for pkg in packages[mid:]:
+            st.write(pkg)
+            badge(type="pypi", name=f"{pkg}")
+
+    st.subheader("Project Maintainers")
+    badge(type="github", name="olsonperrensen")
 
 render_footer()

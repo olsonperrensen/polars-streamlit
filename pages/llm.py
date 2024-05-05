@@ -6,7 +6,7 @@ import time
 import numpy as np
 from streamlit_extras.streaming_write import write
 from streamlit_vertical_slider import vertical_slider
-from streamlit_extras.badges import badge
+
 from streamlit_extras.capture import example_logcapture, example_stdout, example_stderr
 from streamlit_extras.card import card
 from streamlit_extras.chart_container import example_two
@@ -16,11 +16,6 @@ click = st.button("Observe where the 🏃‍♂️ running widget is now!")
 if click:
     center_running()
     time.sleep(2)
-
-
-badge(type="pypi", name="plost")
-
-badge(type="pypi", name="streamlit")
 
 
 example_logcapture()
