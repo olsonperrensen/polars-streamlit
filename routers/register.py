@@ -13,6 +13,7 @@ class UserCreate(BaseModel):
 
 @router.post("/register")
 async def register(user_create: UserCreate):
+    print("reached /register endpoint")
     # Check if the username already exists
     existing_user = get_user(user_create.username)
     if existing_user:
@@ -22,6 +23,7 @@ async def register(user_create: UserCreate):
         )
 
     # Create a new user with the hashed password
+    print(f"trying to create user {user_create.username, user_create.password}")
     user = create_user(user_create.username, user_create.password)
 
     return {"message": "User created successfully"}

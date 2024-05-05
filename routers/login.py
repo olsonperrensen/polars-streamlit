@@ -14,6 +14,8 @@ router = APIRouter()
 
 @router.post("/gen_token")
 async def login(form_data: OAuth2PasswordRequestForm = Depends()):
+    print("reached /gen_token")
+    print(f"about to check form_data: {form_data.username} and {form_data.password}")
     user = authenticate_user(form_data.username, form_data.password)
     if not user:
         raise HTTPException(

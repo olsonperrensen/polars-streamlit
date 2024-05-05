@@ -19,6 +19,9 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="gen_token")
 
 
 def verify_password(plain_password, hashed_password):
+    print(
+        f"soon to be verified INCOMING OG pwd: ({plain_password}) vs hashed pw: ({hashed_password})"
+    )
     return pwd_context.verify(plain_password, hashed_password)
 
 
