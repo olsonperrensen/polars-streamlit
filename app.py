@@ -1,3 +1,4 @@
+import requests
 import streamlit as st
 from st_pages import show_pages, Page
 from streamlit_login_auth_ui.widgets import __login__
@@ -201,13 +202,17 @@ def read_requirements(file_path):
 
 
 with lib_used:
+    response = requests.get("http://localhost:8000/packages_list")
+    packages_backend = response.json()
+
     requirements_file = "requirements.txt"
     packages = read_requirements(requirements_file)
-    st.subheader("Third-Party Libraries Used")
-    col1, col2 = st.columns(2)
+    st.subheader("Libraries")
+    col1, col2, col3, col4 = st.columns(4)
 
     # Calculate the middle index to split the packages into two halves
     mid = len(packages) // 2
+    mid_backend = len(packages_backend) // 2
 
     with col1:
         for pkg in packages[:mid]:
@@ -218,8 +223,16 @@ with lib_used:
         for pkg in packages[mid:]:
             st.write(pkg)
             badge(type="pypi", name=f"{pkg}")
+    with col3:
+        for pkg in packages_backend[mid_backend:]:
+            st.write(pkg)
+            badge(type="pypi", name=f"{pkg}")
+    with col4:
+        for pkg in packages_backend[:mid_backend]:
+            st.write(pkg)
+            badge(type="pypi", name=f"{pkg}")
 
-    st.subheader("Project Maintainers")
+    st.subheader("Maintainers")
     badge(type="github", name="olsonperrensen")
 
 render_footer()
