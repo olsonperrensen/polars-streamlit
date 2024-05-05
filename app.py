@@ -1,21 +1,26 @@
 import streamlit as st
 from st_pages import show_pages, Page
 from streamlit_login_auth_ui.widgets import __login__
-from streamlit_extras.app_logo import add_logo
 
-st.set_page_config(
-    page_title="PolarSpace",
-    page_icon="🌌",
-    layout="wide",
-    initial_sidebar_state="expanded",
-    menu_items={
-        "Get help": "https://hk3lab.ai",
-        "Report a bug": "https://github.com/olsonperrensen/polars-streamlit/issues",
-        "About": "![image](https://hk3lab.ai/wp-content/uploads/2020/02/cropped-cropped-hk3lab-3.png) 2024 © HK3 Lab S.r.l. Via Parteli 19 38068 Rovereto (TN) - Italy - PI/CF 02572270227",
-    },
-)
 
-add_logo("assets/polarspace.png")
+def init_page_ui():
+    from streamlit_extras.app_logo import add_logo
+
+    st.set_page_config(
+        page_title="PolarSpace",
+        page_icon="🌌",
+        layout="wide",
+        initial_sidebar_state="expanded",
+        menu_items={
+            "Get help": "https://hk3lab.ai",
+            "Report a bug": "https://github.com/olsonperrensen/polars-streamlit/issues",
+            "About": "![image](https://hk3lab.ai/wp-content/uploads/2020/02/cropped-cropped-hk3lab-3.png) 2024 © HK3 Lab S.r.l. Via Parteli 19 38068 Rovereto (TN) - Italy - PI/CF 02572270227",
+        },
+    )
+    add_logo("assets/polarspace.png")
+
+
+init_page_ui()
 
 
 def logged_in():

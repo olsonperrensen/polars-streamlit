@@ -1,9 +1,10 @@
 import streamlit as st
-from app import logged_in, render_footer
+from app import logged_in, render_footer, init_page_ui
 import time
-from streamlit_extras.app_logo import add_logo
 
-add_logo("assets/polarspace.png")
+init_page_ui()
+
+
 
 if not logged_in():
     s = st.warning("Authenticate")

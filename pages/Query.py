@@ -5,11 +5,11 @@ import os
 import pandas as pd
 import tempfile
 import subprocess
-from app import logged_in, render_footer
+from app import init_page_ui, logged_in, render_footer
 import time
-from streamlit_extras.app_logo import add_logo
 
-add_logo("assets/polarspace.png")
+init_page_ui()
+
 
 if not logged_in():
     s = st.warning("Authenticate")

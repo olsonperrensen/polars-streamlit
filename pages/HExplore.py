@@ -10,10 +10,9 @@ import pytz
 import os
 import re
 from icecream import ic
-from app import logged_in, render_footer
-from streamlit_extras.app_logo import add_logo
+from app import init_page_ui, logged_in, render_footer
 
-add_logo("assets/polarspace.png")
+init_page_ui()
 
 if not logged_in():
     s = st.warning("Authenticate")
