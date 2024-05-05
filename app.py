@@ -5,6 +5,9 @@ from st_pages import show_pages, Page
 from streamlit_login_auth_ui.widgets import __login__
 from streamlit_extras.badges import badge
 from streamlit_extras.customize_running import center_running
+import os
+
+API_URL = os.environ.get("AUTH_ENDPOINT_URL", "http://localhost:8000")
 
 
 def init_page_ui():
@@ -220,7 +223,7 @@ def read_requirements(file_path):
 
 with lib_used:
     response = requests.get(
-        "http://localhost:8000/packages_list",
+        f"{API_URL}/packages_list",
         headers={"Authorization": f"Bearer {st.session_state.access_token}"},
     )
     packages_backend = response.json()
