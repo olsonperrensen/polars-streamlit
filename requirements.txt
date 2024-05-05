@@ -13,4 +13,4 @@ psycopg2
 python-dotenv
 python-multipart
 python-jose[cryptography] 
-passlib[bcrypt]
+passlib
