@@ -6,17 +6,21 @@ import secrets
 from argon2 import PasswordHasher
 import requests
 import streamlit as st
+from passlib.context import CryptContext
 
 
 ph = PasswordHasher()
 API_URL = os.environ.get("AUTH_ENDPOINT_URL", "http://localhost:8000")
+pwd_context = CryptContext(schemes=["argon2"], deprecated="auto")
 
 
 def check_usr_pass(username: str, password: str) -> bool:
     """
     Authenticates the username and password using the FastAPI backend.
     """
-    data = {"username": username, "password": password}
+    hashed_password = pwd_context.hash(password)
+    print(f"soon to be sent hashed pw: {hashed_password}")
+    data = {"username": username, "password": hashed_password}
     response = requests.post(f"{API_URL}/gen_token", data=data)
 
     if response.status_code == 200:
