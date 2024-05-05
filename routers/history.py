@@ -10,7 +10,7 @@ class CodeSnippetResponse(BaseModel):
     code_body: str
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 @router.get("/history", response_model=list[CodeSnippetResponse])
 async def get_history():
