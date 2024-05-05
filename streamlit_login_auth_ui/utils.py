@@ -6,7 +6,8 @@ from argon2 import PasswordHasher
 import requests
 
 
-ph = PasswordHasher() 
+ph = PasswordHasher()
+
 
 def check_usr_pass(username: str, password: str) -> bool:
     """
@@ -16,10 +17,12 @@ def check_usr_pass(username: str, password: str) -> bool:
         authorized_user_data = json.load(auth_json)
 
     for registered_user in authorized_user_data:
-        if registered_user['username'] == username:
+        if registered_user["username"] == username:
             try:
-                passwd_verification_bool = ph.verify(registered_user['password'], password)
-                if passwd_verification_bool == True:
+                passwd_verification_bool = ph.verify(
+                    registered_user["password"], password
+                )
+                if passwd_verification_bool is True:
                     return True
             except:
                 pass
@@ -43,7 +46,7 @@ def check_valid_name(name_sign_up: str) -> bool:
     """
     Checks if the user entered a valid name while creating the account.
     """
-    name_regex = (r'^[A-Za-z_][A-Za-z0-9_]*')
+    name_regex = r"^[A-Za-z_][A-Za-z0-9_]*"
 
     if re.search(name_regex, name_sign_up):
         return True
@@ -54,7 +57,9 @@ def check_valid_email(email_sign_up: str) -> bool:
     """
     Checks if the user entered a valid email while creating the account.
     """
-    regex = re.compile(r'([A-Za-z0-9]+[.-_])*[A-Za-z0-9]+@[A-Za-z0-9-]+(\.[A-Z|a-z]{2,})+')
+    regex = re.compile(
+        r"([A-Za-z0-9]+[.-_])*[A-Za-z0-9]+@[A-Za-z0-9-]+(\.[A-Z|a-z]{2,})+"
+    )
 
     if re.fullmatch(regex, email_sign_up):
         return True
@@ -70,7 +75,7 @@ def check_unique_email(email_sign_up: str) -> bool:
         authorized_users_data = json.load(auth_json)
 
         for user in authorized_users_data:
-            authorized_user_data_master.append(user['email'])
+            authorized_user_data_master.append(user["email"])
 
     if email_sign_up in authorized_user_data_master:
         return False
@@ -83,7 +88,7 @@ def non_empty_str_check(username_sign_up: str) -> bool:
     """
     empty_count = 0
     for i in username_sign_up:
-        if i == ' ':
+        if i == " ":
             empty_count = empty_count + 1
             if empty_count == len(username_sign_up):
                 return False
@@ -103,23 +108,30 @@ def check_unique_usr(username_sign_up: str):
         authorized_users_data = json.load(auth_json)
 
         for user in authorized_users_data:
-            authorized_user_data_master.append(user['username'])
+            authorized_user_data_master.append(user["username"])
 
     if username_sign_up in authorized_user_data_master:
         return False
-    
+
     non_empty_check = non_empty_str_check(username_sign_up)
 
-    if non_empty_check == False:
+    if non_empty_check is False:
         return None
     return True
 
 
-def register_new_usr(name_sign_up: str, email_sign_up: str, username_sign_up: str, password_sign_up: str) -> None:
+def register_new_usr(
+    name_sign_up: str, email_sign_up: str, username_sign_up: str, password_sign_up: str
+) -> None:
     """
     Saves the information of the new user in the _secret_auth.json file.
     """
-    new_usr_data = {'username': username_sign_up, 'name': name_sign_up, 'email': email_sign_up, 'password': ph.hash(password_sign_up)}
+    new_usr_data = {
+        "username": username_sign_up,
+        "name": name_sign_up,
+        "email": email_sign_up,
+        "password": ph.hash(password_sign_up),
+    }
 
     with open("_secret_auth_.json", "r") as auth_json:
         authorized_user_data = json.load(auth_json)
@@ -138,12 +150,12 @@ def check_username_exists(user_name: str) -> bool:
         authorized_users_data = json.load(auth_json)
 
         for user in authorized_users_data:
-            authorized_user_data_master.append(user['username'])
-        
+            authorized_user_data_master.append(user["username"])
+
     if user_name in authorized_user_data_master:
         return True
     return False
-        
+
 
 def check_email_exists(email_forgot_passwd: str):
     """
@@ -153,8 +165,8 @@ def check_email_exists(email_forgot_passwd: str):
         authorized_users_data = json.load(auth_json)
 
         for user in authorized_users_data:
-            if user['email'] == email_forgot_passwd:
-                    return True, user['username']
+            if user["email"] == email_forgot_passwd:
+                return True, user["username"]
     return False, None
 
 
@@ -166,25 +178,38 @@ def generate_random_passwd() -> str:
     return secrets.token_urlsafe(password_length)
 
 
-def send_passwd_in_email(auth_token: str, username_forgot_passwd: str, email_forgot_passwd: str, company_name: str, random_password: str) -> None:
+def send_passwd_in_email(
+    auth_token: str,
+    username_forgot_passwd: str,
+    email_forgot_passwd: str,
+    company_name: str,
+    random_password: str,
+) -> None:
     """
     Triggers an email to the user containing the randomly generated password.
     """
-    client = Courier(auth_token = auth_token)
+    client = Courier(auth_token=auth_token)
 
     resp = client.send_message(
-    message={
-        "to": {
-        "email": email_forgot_passwd
-        },
-        "content": {
-        "title": company_name + ": Login Password!",
-        "body": "Hi! " + username_forgot_passwd + "," + "\n" + "\n" + "Your temporary login password is: " + random_password  + "\n" + "\n" + "{{info}}"
-        },
-        "data":{
-        "info": "Please reset your password at the earliest for security reasons."
+        message={
+            "to": {"email": email_forgot_passwd},
+            "content": {
+                "title": company_name + ": Login Password!",
+                "body": "Hi! "
+                + username_forgot_passwd
+                + ","
+                + "\n"
+                + "\n"
+                + "Your temporary login password is: "
+                + random_password
+                + "\n"
+                + "\n"
+                + "{{info}}",
+            },
+            "data": {
+                "info": "Please reset your password at the earliest for security reasons."
+            },
         }
-    }
     )
 
 
@@ -197,39 +222,28 @@ def change_passwd(email_: str, random_password: str) -> None:
 
     with open("_secret_auth_.json", "w") as auth_json_:
         for user in authorized_users_data:
-            if user['email'] == email_:
-                user['password'] = ph.hash(random_password)
+            if user["email"] == email_:
+                user["password"] = ph.hash(random_password)
         json.dump(authorized_users_data, auth_json_)
-    
+
 
 def check_current_passwd(email_reset_passwd: str, current_passwd: str) -> bool:
     """
-    Authenticates the password entered against the username when 
+    Authenticates the password entered against the username when
     resetting the password.
     """
     with open("_secret_auth_.json", "r") as auth_json:
         authorized_users_data = json.load(auth_json)
 
         for user in authorized_users_data:
-            if user['email'] == email_reset_passwd:
+            if user["email"] == email_reset_passwd:
                 try:
-                    if ph.verify(user['password'], current_passwd) == True:
+                    if ph.verify(user["password"], current_passwd) is True:
                         return True
                 except:
                     pass
     return False
 
+
 # Author: Gauri Prabhakar
 # GitHub: https://github.com/GauriSP10/streamlit_login_auth_ui
-
-
-
-
-
-
-
-
-
-
-
-
