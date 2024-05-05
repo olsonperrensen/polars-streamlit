@@ -10,6 +10,7 @@ from routers import (
     execute_python,
     history,
     upload_parquet,
+    packages_list,
 )
 from database import engine, Base
 
@@ -25,6 +26,7 @@ app.include_router(dataframe.router)
 app.include_router(execute_python.router)
 app.include_router(history.router)
 app.include_router(upload_parquet.router)
+app.include_router(packages_list.router)
 
 
 Base.metadata.create_all(bind=engine)
