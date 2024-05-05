@@ -111,6 +111,71 @@ def send_python_code(python_code, selected_libraries, selected_actions):
         return str(e)
 
 
+@st.experimental_dialog("Recent Queries")
+def vote():
+    st.markdown(
+        """
+        <style>
+        .history-container {
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #f0f0f0;
+            border-radius: 5px;
+        }
+        .history-container .stExpander {
+            margin-bottom: 10px;
+        }
+        .history-container .stExpander .stExpanderHeader {
+            font-size: 18px;
+            font-weight: bold;
+        }
+        .history-container .stExpander .stExpanderContent {
+            padding: 10px;
+            background-color: #ffffff;
+            border-radius: 5px;
+        }
+        </style>
+        """,
+        unsafe_allow_html=True,
+    )
+    history_container = st.container()
+    with history_container:
+        history = fetch_history()
+        for idx, uitgave in enumerate(history, start=1):
+            history_expander = st.expander(
+                f"Step {idx}",
+                expanded=idx == len(history),
+            )
+            with history_expander:
+                col1, col2 = st.columns([3, 1])
+                with col1:
+                    st.code(uitgave.get("code_body"), language="python")
+                with col2:
+                    if uitgave.get("id"):
+                        st.write(f"DataFrame: {uitgave.get('id')}")
+                    st.button(
+                        "Remove",
+                        key=f"remove-history-{idx}",
+                        on_click=lambda idx=idx: remove_history_item(idx),
+                    )
+
+    if st.button("Clear History", key="btn-to-clear-history-end-section"):
+        response = requests.delete(f"{API_URL}/history")
+        if response.status_code == 200:
+            st.experimental_rerun()
+        else:
+            st.error("Failed to clear history.")
+        st.rerun()
+
+
+def remove_history_item(idx):
+    response = requests.delete(f"{API_URL}/history/{idx}")
+    if response.status_code == 200:
+        st.experimental_rerun()
+    else:
+        st.error("Failed to remove history item.")
+
+
 def main():
     st.title("Query Editor")
 
@@ -216,51 +281,56 @@ def main():
                 placeholder="print(df.to_json())",
                 key="py-code-gen-ota",
             )
+            col1, col2, col3 = st.columns(3)
+            with col1:
+                if st.button("Execute", key="exec-code-py-btn"):
+                    # if python_code.strip():
+                    #     result = send_python_code(python_code, selected_libraries)
+                    #     st.subheader("Execution Result")
+                    #     if isinstance(result, dict):
+                    #         st.json(result)
+                    #     else:
+                    #         st.text(result)
+                    # else:
+                    #     st.warning("Please enter some Python code.")
+                    response = send_python_code(
+                        python_code, selected_libraries, selected_actions
+                    )
+                    if isinstance(response, str):
+                        st.error(f"Error: {response}")
+                    else:
+                        with st.expander("Result"):
+                            st.success("Execution Successful")
+                            res = response["remote_response"]
+                            output = res.get("output", "")
+                            result = res.get("result", None)
 
-            if st.button("Execute", key="exec-code-py-btn"):
-                # if python_code.strip():
-                #     result = send_python_code(python_code, selected_libraries)
-                #     st.subheader("Execution Result")
-                #     if isinstance(result, dict):
-                #         st.json(result)
-                #     else:
-                #         st.text(result)
-                # else:
-                #     st.warning("Please enter some Python code.")
-                response = send_python_code(
-                    python_code, selected_libraries, selected_actions
-                )
-                if isinstance(response, str):
-                    st.error(f"Error: {response}")
-                else:
-                    with st.expander("Result"):
-                        st.success("Execution Successful")
-                        res = response["remote_response"]
-                        output = res.get("output", "")
-                        result = res.get("result", None)
-
-                        if output:
-                            st.subheader("Output")
-                            output = json.loads(output)
-                            st.data_editor(
-                                output, key="data-editor-based-on-pd-df-output"
-                            )
-
-                        if result is not None:
-                            st.subheader("Result")
-                            if isinstance(result, pd.DataFrame):
-                                st.dataframe(result, key="df-res")
-                                df_name = st.text_input(
-                                    "Enter a name for the DataFrame:",
-                                    key="df-naming-text-input-area",
+                            if output:
+                                st.subheader("Output")
+                                output = json.loads(output)
+                                st.data_editor(
+                                    output, key="data-editor-based-on-pd-df-output"
                                 )
-                                if df_name:
-                                    st.session_state.history.append(
-                                        (python_code, df_name)
-                                    )
-                            else:
-                                st.write(result, key="writing-raw-res")
 
+                            if result is not None:
+                                st.subheader("Result")
+                                if isinstance(result, pd.DataFrame):
+                                    st.dataframe(result, key="df-res")
+                                    df_name = st.text_input(
+                                        "Enter a name for the DataFrame:",
+                                        key="df-naming-text-input-area",
+                                    )
+                                    if df_name:
+                                        st.session_state.history.append(
+                                            (python_code, df_name)
+                                        )
+                                else:
+                                    st.write(result, key="writing-raw-res")
+            with col2:
+                if st.button("Query History", key="exec-code-py-llm-btn"):
+                    vote()
+            with col3:
+                st.button("Ask LLM")
     # Continuous workflow
     if "history" not in st.session_state:
         st.session_state.history = []

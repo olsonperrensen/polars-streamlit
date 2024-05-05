@@ -85,9 +85,8 @@ show_pages(
         Page("pages/HExplore.py", "Explore", "📈"),
         Page("pages/Query.py", "Query", "📅"),
         Page("pages/llm.py", "Experiment", "🦄"),
-        Page("pages/openapi.py", "OPENAPI", "🐲"),
+        Page("pages/openapi.py", "Chat2Plot", "🦜"),
         Page("pages/openapi-v2.py", "OPENAPIv2", "🐉"),
-        Page("pages/history.py", "History", "🦜"),
     ]
 )
 st.title("🌟 Welcome to PolarSpace! 🌌")
