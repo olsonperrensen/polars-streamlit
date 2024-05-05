@@ -63,7 +63,10 @@ def app():
 
     try:
 
-        response = requests.get(f"{API_URL}/health")
+        response = requests.get(
+            f"{API_URL}/health",
+            headers={"Authorization": f"Bearer {st.session_state.access_token}"},
+        )
         if response.status_code == 200:
             s = st.success("Backend server is healthy and responsive.")
             time.sleep(0.7)
@@ -183,7 +186,13 @@ def app():
             if pq_bestand is not None:
                 # Send the uploaded parquet file to a different endpoint
                 files = {"file": pq_bestand}
-                response = requests.post(f"{API_URL}/upload_parquet", files=files)
+                response = requests.post(
+                    f"{API_URL}/upload_parquet",
+                    files=files,
+                    headers={
+                        "Authorization": f"Bearer {st.session_state.access_token}"
+                    },
+                )
                 if response.status_code == 200:
                     st.success("Parquet file uploaded successfully.")
                     raw_res = response.json()["data"]
@@ -219,6 +228,9 @@ def app():
                     response = requests.post(
                         f"{API_URL}/{graph_type.lower().replace(' ', '_')}",
                         json=last_step,
+                        headers={
+                            "Authorization": f"Bearer {st.session_state.access_token}"
+                        },
                     )
 
                     if last_step["interactive_plot"]:
@@ -283,13 +295,19 @@ def app():
 
 @st.cache_data
 def load_patients():
-    response = requests.get(f"{API_URL}/patients")
+    response = requests.get(
+        f"{API_URL}/patients",
+        headers={"Authorization": f"Bearer {st.session_state.access_token}"},
+    )
     return response.json()
 
 
 @st.cache_data
 def load_data_types():
-    response = requests.get(f"{API_URL}/data_types")
+    response = requests.get(
+        f"{API_URL}/data_types",
+        headers={"Authorization": f"Bearer {st.session_state.access_token}"},
+    )
     return response.json()
 
 
@@ -298,6 +316,7 @@ def load_parquet_files(patient_id, data_type):
     response = requests.get(
         f"{API_URL}/parquet_files",
         params={"patient_id": patient_id, "data_type": data_type},
+        headers={"Authorization": f"Bearer {st.session_state.access_token}"},
     )
     ic(response)
     parquet_file_paths = response.json()
@@ -310,7 +329,9 @@ def load_parquet_files(patient_id, data_type):
 
     if parquet_file_paths:
         response = requests.get(
-            f"{API_URL}/column_names", params={"parquet_file": parquet_file_paths[0]}
+            f"{API_URL}/column_names",
+            params={"parquet_file": parquet_file_paths[0]},
+            headers={"Authorization": f"Bearer {st.session_state.access_token}"},
         )
         data = response.json()
         column_names, row_count = data["column_names"], data["row_count"]

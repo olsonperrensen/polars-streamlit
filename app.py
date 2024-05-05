@@ -219,7 +219,10 @@ def read_requirements(file_path):
 
 
 with lib_used:
-    response = requests.get("http://localhost:8000/packages_list")
+    response = requests.get(
+        "http://localhost:8000/packages_list",
+        headers={"Authorization": f"Bearer {st.session_state.access_token}"},
+    )
     packages_backend = response.json()
 
     requirements_file = "requirements.txt"

@@ -23,7 +23,10 @@ API_URL = os.environ.get("AUTH_ENDPOINT_URL", "http://localhost:8000")
 
 def fetch_history():
     try:
-        response = requests.get(f"{API_URL}/history")
+        response = requests.get(
+            f"{API_URL}/history",
+            headers={"Authorization": f"Bearer {st.session_state.access_token}"},
+        )
         if response.status_code == 200:
             return response.json()
         else:
@@ -101,6 +104,7 @@ def send_python_code(python_code, selected_libraries, selected_actions):
             f"{API_URL}/execute_python",
             json={"python_code": formatted_code},
             timeout=120,
+            headers={"Authorization": f"Bearer {st.session_state.access_token}"},
         )
         if response.status_code == 200:
             if "history" not in st.session_state:
@@ -163,7 +167,10 @@ def vote():
                     )
 
     if st.button("Clear History", key="btn-to-clear-history-end-section"):
-        response = requests.delete(f"{API_URL}/history")
+        response = requests.delete(
+            f"{API_URL}/history",
+            headers={"Authorization": f"Bearer {st.session_state.access_token}"},
+        )
         if response.status_code == 200:
             st.experimental_rerun()
         else:
@@ -172,7 +179,10 @@ def vote():
 
 
 def remove_history_item(idx):
-    response = requests.delete(f"{API_URL}/history/{idx}")
+    response = requests.delete(
+        f"{API_URL}/history/{idx}",
+        headers={"Authorization": f"Bearer {st.session_state.access_token}"},
+    )
     if response.status_code == 200:
         st.experimental_rerun()
     else:
