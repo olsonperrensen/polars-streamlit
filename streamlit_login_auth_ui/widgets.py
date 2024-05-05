@@ -180,13 +180,16 @@ class __login__:
                     if valid_email_check is True:
                         if unique_email_check is True:
                             if unique_username_check is True:
-                                register_new_usr(
+                                registration_status = register_new_usr(
                                     name_sign_up,
                                     email_sign_up,
                                     username_sign_up,
                                     password_sign_up,
                                 )
-                                st.success("Registration Successful!")
+                                if registration_status == 200:
+                                    st.success("Registration Successful!")
+                                else:
+                                    st.error("Registration Failed. Please try again.")
 
     def forgot_password(self) -> None:
         """

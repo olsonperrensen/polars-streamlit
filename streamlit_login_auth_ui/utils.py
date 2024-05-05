@@ -1,32 +1,32 @@
+import os
 import re
 import json
 from trycourier import Courier
 import secrets
 from argon2 import PasswordHasher
 import requests
+import streamlit as st
 
 
 ph = PasswordHasher()
+API_URL = os.environ.get("AUTH_ENDPOINT_URL", "http://localhost:8000")
 
 
 def check_usr_pass(username: str, password: str) -> bool:
     """
-    Authenticates the username and password.
+    Authenticates the username and password using the FastAPI backend.
     """
-    with open("_secret_auth_.json", "r") as auth_json:
-        authorized_user_data = json.load(auth_json)
+    data = {"username": username, "password": password}
+    response = requests.post(f"{API_URL}/gen_token", data=data)
 
-    for registered_user in authorized_user_data:
-        if registered_user["username"] == username:
-            try:
-                passwd_verification_bool = ph.verify(
-                    registered_user["password"], password
-                )
-                if passwd_verification_bool is True:
-                    return True
-            except:
-                pass
-    return False
+    if response.status_code == 200:
+        token_data = response.json()
+        access_token = token_data["access_token"]
+        # Store the access token in a secure way (e.g., session state or secure cookie)
+        st.session_state.access_token = access_token
+        return True
+    else:
+        return False
 
 
 def load_lottieurl(url: str) -> str:
@@ -133,12 +133,23 @@ def register_new_usr(
         "password": ph.hash(password_sign_up),
     }
 
+    response = requests.post(f"{API_URL}/register", json=new_usr_data)
+
+    if response.status_code == 200:
+        # User registration successful in the backend
+        print(f"User {new_usr_data} registered successfully in the backend")
+    else:
+        # Handle the error case if registration fails in the backend
+        print(f"User {new_usr_data} registration failed in the backend")
+
     with open("_secret_auth_.json", "r") as auth_json:
         authorized_user_data = json.load(auth_json)
 
     with open("_secret_auth_.json", "w") as auth_json_write:
         authorized_user_data.append(new_usr_data)
         json.dump(authorized_user_data, auth_json_write)
+
+    return response.status_code
 
 
 def check_username_exists(user_name: str) -> bool:

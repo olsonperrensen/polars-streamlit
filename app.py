@@ -1,3 +1,4 @@
+import time
 import requests
 import streamlit as st
 from st_pages import show_pages, Page
@@ -41,6 +42,13 @@ def logged_in():
 
     LOGGED_IN = __login__obj.build_login_ui()
     return LOGGED_IN
+
+
+if not logged_in():
+    s = st.warning("Authenticate")
+    time.sleep(0.7)
+    s.empty()
+    st.stop()
 
 
 def render_footer():
