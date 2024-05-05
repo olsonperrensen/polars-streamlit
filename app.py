@@ -193,7 +193,14 @@ with feature_tabs:
             )
 with st.expander("🎓A final word"):
     st.write(
-        "PolarSpace is continuously evolving to provide an even better user experience. Get ready to unleash the power of data analysis and visualization with PolarSpace. Happy data-ing! 🌠💫"
+        "PolarSpace is continuously improving to provide a reliable user experience."
+    )
+    st.write(
+        "We would love to hear from you! Write us for tips and suggestions, knowing where and what we could improve."
+    )
+    st.write("All feedback sent it is valuable!")
+    st.write(
+        "Now, get ready to unleash the power of data analysis and visualization with PolarSpace. Happy data-ing! 🌠💫"
     )
 
 
