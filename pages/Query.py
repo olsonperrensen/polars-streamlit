@@ -94,7 +94,7 @@ def send_python_code(python_code, selected_libraries, selected_actions):
 
         # Delete the temporary file
         # os.unlink(temp_file_path)
-        with st.expander("Black"):
+        with st.expander("Black 📦"):
             st.code(formatted_code, language="python")
         response = requests.post(
             f"{API_URL}/execute_python",
@@ -283,7 +283,8 @@ def main():
                 placeholder="print(df.to_json())",
                 key="py-code-gen-ota",
             )
-            col1, col2, col3 = st.columns(3)
+            (col1,) = st.columns(1)
+            col2, col3 = st.columns(2)
             with col1:
                 if st.button("Execute", key="exec-code-py-btn"):
                     # if python_code.strip():
@@ -301,14 +302,14 @@ def main():
                     if isinstance(response, str):
                         st.error(f"Error: {response}")
                     else:
-                        with st.expander("Result"):
-                            st.success("Execution Successful")
+                        with st.expander("Result 🎊"):
+                            st.success("Execution Successful 🪅")
                             res = response["remote_response"]
                             output = res.get("output", "")
                             result = res.get("result", None)
 
                             if output:
-                                st.subheader("Output")
+                                st.subheader("Output 🎓")
                                 output = json.loads(output)
                                 st.data_editor(
                                     output, key="data-editor-based-on-pd-df-output"
