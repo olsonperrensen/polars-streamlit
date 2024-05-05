@@ -11,6 +11,9 @@ import os
 import re
 from icecream import ic
 from app import logged_in, render_footer
+from streamlit_extras.app_logo import add_logo
+
+add_logo("assets/polarspace.png")
 
 if not logged_in():
     s = st.warning("Authenticate")

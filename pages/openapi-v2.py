@@ -2,6 +2,9 @@ import streamlit as st
 import replicate
 import os
 from transformers import AutoTokenizer
+from streamlit_extras.app_logo import add_logo
+
+add_logo("assets/polarspace.png")
 
 # # Assuming you have a specific tokenizers for Llama; if not, use an appropriate one like this
 # tokenizer = AutoTokenizer.from_pretrained("allenai/llama")

@@ -1,4 +1,3 @@
-import logging
 from streamlit_extras.dataframe_explorer import dataframe_explorer
 import streamlit as st
 import pandas as pd
@@ -7,7 +6,6 @@ import time
 import numpy as np
 from streamlit_extras.streaming_write import write
 from streamlit_vertical_slider import vertical_slider
-from streamlit_extras.app_logo import add_logo
 from streamlit_extras.badges import badge
 from streamlit_extras.capture import example_logcapture, example_stdout, example_stderr
 from streamlit_extras.card import card
@@ -24,19 +22,6 @@ badge(type="pypi", name="plost")
 
 badge(type="pypi", name="streamlit")
 
-
-def log_o():
-
-    if st.checkbox("Use url", value=True):
-
-        add_logo("assets/polarspace.png")
-
-    else:
-
-        add_logo("gallery/kitty.jpeg", height=300)
-
-
-log_o()
 
 example_logcapture()
 example_stdout()

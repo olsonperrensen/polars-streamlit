@@ -9,6 +9,9 @@ from pydantic import BaseModel
 from streamlit_chat import message
 from chat2plot import ResponseType, chat2plot
 from chat2plot.chat2plot import Chat2Vega
+from streamlit_extras.app_logo import add_logo
+
+add_logo("assets/polarspace.png")
 
 
 st.header("Chat2Plot Demo")
