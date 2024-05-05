@@ -20,26 +20,18 @@ if not logged_in():
     s.empty()
     st.stop()
 
-# Set the API endpoint URL
 API_URL = os.environ.get("AUTH_ENDPOINT_URL", "http://localhost:8000")
 
 if st.button("Switch to Query Editor", key="switch-to-query-editor"):
     st.switch_page("pages/Query.py")
 
-# alt.themes.enable("dark")
-
-# Initialize the activity log
 activity_log = deque(maxlen=100)
 
-# Initialize the timestamps
 start_time = None
 end_time = None
 
 
 def get_client_ip() -> str:
-    """
-    Retrieve the client's IP address from the environment or a third-party service.
-    """
     try:
         response = requests.get("https://fourfivezero-a8246d817a17.herokuapp.com/ip")
         return response.text.strip()
@@ -55,22 +47,19 @@ def log_activity(message):
 
 
 def app():
-    # Get the start time
+
     global start_time
     start_time = time.time()
 
-    # Log the start of the session
     log_activity("User started the session")
 
-    # Initialize the session state
     if "steps" not in st.session_state:
         st.session_state.steps = []
     if "activity_log" not in st.session_state:
         st.session_state.activity_log = []
 
-    # Perform health check
     try:
-        # Send a health check request to the backend
+
         response = requests.get(f"{API_URL}/health")
         if response.status_code == 200:
             s = st.success("Backend server is healthy and responsive.")
@@ -92,15 +81,12 @@ def app():
         st.write(f"Error details: {str(e)}")
         return
 
-    # Sidebar
     with st.sidebar:
-        st.markdown("##")  # Add some vertical space
+        st.markdown("##")
         st.title("🧠 EEG Data Explorer")
 
-        # Select patient
         patient_id = st.selectbox("Select a patient", load_patients())
 
-        # Select data type
         data_type = st.selectbox("Select data type", load_data_types())
 
         color_theme_list = [
@@ -117,34 +103,32 @@ def app():
         ]
         selected_color_theme = st.selectbox("Select a color theme", color_theme_list)
 
-        # Log patient selection
+        st.subheader("Use your own data")
+        pq_bestand = st.file_uploader("Option #2")
+
         if patient_id:
             log_activity(f"Selected patient: {patient_id}")
 
-        # Log data type selection
         if data_type:
             log_activity(f"Selected data type: {data_type}")
 
-        # Log color theme selection
         if selected_color_theme:
             log_activity(f"Selected color theme: {selected_color_theme}")
 
-        st.markdown("---")  # Add a horizontal line
+        st.markdown("---")
         log_file = "\n".join(activity_log)
 
-        # Download log file button
         if st.download_button(
             label="Download log file",
             data=log_file,
             file_name="activity_log.txt",
             mime="text/plain",
         ):
-            # Write the log to a file
+
             with open("activity_log.txt", "w") as log_file:
                 for entry in activity_log:
                     log_file.write(entry + "\n")
 
-    # Main content area
     if patient_id and data_type:
         full_urls, displayed_urls, column_names, row_count = load_parquet_files(
             patient_id, data_type
@@ -153,11 +137,10 @@ def app():
         col1, col2 = st.columns((2, 2))
 
         with col1:
-            # Select Parquet file
+
             parquet_file = st.selectbox("Select a Parquet file", displayed_urls)
             parquet_url = f"https://huggingface.co/datasets/NOttheol/EEG-Talha-Alakus-Gonen-Turkoglu/resolve/refs%2Fconvert%2Fparquet{parquet_file}"
 
-            # Select columns
             with st.expander("Select Columns"):
                 selected_columns = st.multiselect(
                     "Columns to load",
@@ -166,7 +149,6 @@ def app():
                     max_selections=4,
                 )
 
-            # Select number of rows
             num_rows = st.number_input(
                 "Number of rows to load",
                 min_value=1,
@@ -176,7 +158,7 @@ def app():
             )
 
         with col2:
-            # Axis and color settings (with more space)
+
             with st.expander("Axis and Color Settings", expanded=True):
                 x_axis = st.selectbox("X-axis", selected_columns, index=0)
                 y_axis = st.selectbox("Y-axis", selected_columns, index=1)
@@ -195,22 +177,34 @@ def app():
             )
 
         if st.button("Save preferences"):
-            step = {
-                "parquet_url": parquet_url,
-                "columns": selected_columns,
-                "num_rows": num_rows,
-                "x_axis": x_axis,
-                "y_axis": y_axis,
-                "z_axis": z_axis,
-                "color_axis": color_axis,
-                "interactive_plot": interactive_plot,
-            }
-            st.session_state.steps.append(step)
-            st.session_state.activity_log.append(
-                f"Saved preferences: {parquet_file}, {', '.join(selected_columns)}, {num_rows} rows"
-            )
+            if pq_bestand is not None:
+                # Send the uploaded parquet file to a different endpoint
+                files = {"file": pq_bestand}
+                response = requests.post(f"{API_URL}/upload_parquet", files=files)
+                if response.status_code == 200:
+                    st.success("Parquet file uploaded successfully.")
+                    raw_res = response.json()["data"]
+                    res = json.loads(raw_res)
+                    st.data_editor(res)
 
-        # Visualization tabs
+                else:
+                    st.error("Failed to upload the parquet file.")
+            else:
+                step = {
+                    "parquet_url": parquet_url,
+                    "columns": selected_columns,
+                    "num_rows": num_rows,
+                    "x_axis": x_axis,
+                    "y_axis": y_axis,
+                    "z_axis": z_axis,
+                    "color_axis": color_axis,
+                    "interactive_plot": interactive_plot,
+                }
+                st.session_state.steps.append(step)
+                st.session_state.activity_log.append(
+                    f"Saved preferences: {parquet_file}, {', '.join(selected_columns)}, {num_rows} rows"
+                )
+
         result_tab, logging_dashboard_tab = st.tabs(["Result", "Log"])
 
         def render_plot(graph_type, tab):
@@ -218,7 +212,7 @@ def app():
                 if st.session_state.steps:
                     last_step = st.session_state.steps[-1]
                     last_step["removed_columns"] = removed_columns
-                    # Send a request to the backend with the collected steps
+
                     response = requests.post(
                         f"{API_URL}/{graph_type.lower().replace(' ', '_')}",
                         json=last_step,
@@ -249,7 +243,6 @@ def app():
         if graph_type:
             render_plot(graph_type, result_tab)
 
-        # About/Help section
         with st.expander("About", expanded=True):
             st.write(
                 """
@@ -260,19 +253,16 @@ def app():
                 - Save your preferences to explore different visualizations.
             """
             )
-        # Log Parquet file selection
+
         if parquet_file:
             log_activity(f"Selected Parquet file: {parquet_file}")
 
-        # Log column selection
         if selected_columns:
             log_activity(f"Selected columns: {', '.join(selected_columns)}")
 
-        # Log number of rows selection
         if num_rows:
             log_activity(f"Selected number of rows: {num_rows}")
 
-        # Log axis selections
         if x_axis:
             log_activity(f"Selected X-axis: {x_axis}")
         if y_axis:
@@ -282,19 +272,9 @@ def app():
         if color_axis:
             log_activity(f"Selected color axis: {color_axis}")
 
-        # Log interactive plot selection
         if interactive_plot is not None:
             log_activity(f"Selected interactive plot: {interactive_plot}")
-            # # Get the end time
-            # global end_time
-            # end_time = time.time()
 
-            # # Log the end of the session
-            # log_activity("User ended the session")
-
-            # # Calculate the total time spent
-            # total_time_spent = end_time - start_time
-            # log_activity(f"Total time spent on the app: {total_time_spent:.2f} seconds")
     render_footer()
 
 
