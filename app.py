@@ -98,7 +98,7 @@ show_pages(
         Page("pages/Query.py", "Query", "📅"),
         Page("pages/openapi.py", "Chat2Plot", "🦜"),
         Page("pages/openapi-v2.py", "OPENAPIv2", "🐉"),
-        Page("pages/coming-soon.py", "Coming-Soon", "🦄"),
+        Page("pages/Releases.py", "Releases", "🦄"),
     ]
 )
 st.title("🌟 Welcome to PolarSpace! 🌌")
