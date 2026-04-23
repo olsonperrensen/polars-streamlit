@@ -1,13 +1,1 @@
----
-title: Hk3lab
-emoji: 🌍
-colorFrom: indigo
-colorTo: indigo
-sdk: streamlit
-sdk_version: 1.33.0
-app_file: app.py
-pinned: false
-license: mit
----
-
-Check out the configuration reference at https://huggingface.co/docs/hub/spaces-config-reference
+PolarSpace is a web app that lets technical and non‑technical users explore large parquet‑backed health trajectory datasets with Polars, Streamlit, and FastAPI, combining secure authentication (JWT + Argon2), sandboxed Polars code execution, and rich 2D/3D visualizations. It adds an AI layer via Chat2Plot and Snowflake Arctic LLM so users can talk to their data in natural language and get executable queries and charts back, while guarded by strict validation, whitelisted libraries, and double sanitization. Deployed on cloud infrastructure with Heroku Postgres and optional Hugging Face dataset integration, PolarSpace ships with logging, history tracking, and a clear roadmap toward containerization, deeper security hardening, and broader data format support—turning messy medical time series into actionable insights in a few clicks.
